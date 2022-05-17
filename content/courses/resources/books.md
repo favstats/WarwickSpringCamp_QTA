@@ -14,6 +14,14 @@ weight: 1
 
 <br>
 
+## Quantitative Text Analysis workshops
+
+* Michael Clark [Text Analysis in R](https://m-clark.github.io/text-analysis-with-R/intro.html)
+* Julia Silge and David Robinson [Text Mining with R](https://www.tidytextmining.com/)
+* Various Authors [SICCS Learning Materials](https://sicss.io/curriculum)
+* Dr. Will Lowe [Text as Data: Quantitative Text Analysis with R](https://socialdatascience.network/courses/textasdata.html)
+* Kasper Welbers [Text analysis in R](https://www.youtube.com/watch?v=O6CGXnxPHok&list=PL-i7GM-A1wBZYRYTpem7hNVHK3hSV_1It)
+
 ## Visualization
 
 *   William Cleveland, [The Elements of Graphing Data](http://www.powells.com/biblio/73-9780963488411-0)
