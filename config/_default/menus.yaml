@@ -1,0 +1,21 @@
+# Navigation Links
+#   To link a homepage widget, specify the URL as a hash `#` followed by the filename of the
+#     desired widget in your `content/home/` folder.
+#   The weight parameter defines the order that the links will appear in.
+
+main:
+  - name: Syllabus
+    url: 'https://www.graduateinstitute.ch/courses' # Insert the URL to your PDF syllabus here
+    weight: 1
+  - name: Classes # Delete me if you don't need me.
+    url: 'post'
+    weight: 2
+  - name: Resources # Delete me if you don't need me.
+    url: 'courses/resources/'
+    weight: 3
+  - name: User Guide # Delete me if you don't need me.
+    url: 'courses/userguide/'
+    weight: 3
+  - name: '<i class="fab fa-slack"></i>'  # Delete me if you don't need me.
+    url: "https://slack.com"
+    weight: 4

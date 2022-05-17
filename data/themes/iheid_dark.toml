@@ -1,0 +1,30 @@
+# Doesn't work yet --> https://silvia.rbind.io/blog/dark-theme-custom-with-atom/#choose-your-own-adventure
+
+# Theme metadata
+name = "iheid_dark"
+
+# Primary
+primary = "#E20C20"
+
+# Menu
+menu_primary = "#E20C20"
+menu_text = "#F3F7F0"
+menu_text_active = "#F3F7F0"
+menu_title = "#F3F7F0"
+
+# Backgrounds
+# background = "#F3F7F0"
+# home_section_odd = "#F3F7F0"
+# home_section_even = "#F3F7F0"
+
+dark_background = "#121212"
+dark_home_section_odd = "#121212"
+dark_home_section_even = "#121212"
+
+link = "#E20C20"
+link_hover = "#4C5454"
+
+[dark]
+  link = "#E20C20"
+  link_hover = "#F3F7F0"
+# Changes will only preview after rerunning hugo server.

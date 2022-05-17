@@ -1,0 +1,249 @@
+/*************************************************
+ *  Dark themed components
+ **************************************************/
+
+// Note, this still needs to be refactored.
+
+// For color palettes, I used https://coolors.co/
+// For guidelines on material design see: https://material.io/design/color/the-color-system.html#color-usage-and-palettes
+// Adapted from:  https://silvia.rbind.io/blog/dark-theme-custom-with-atom/#choose-your-own-adventure
+// Modifying the standard template from: https://github.com/wowchemy/wowchemy-hugo-themes/blob/main/wowchemy/assets/scss/wowchemy/_dark.scss
+
+// below from mix($spc-primary, $spc-bkg-dark-std, 25)
+// custom bkg
+$spc-bkg-dark: #12151d;
+// below from mix($spc-primary, $spc-bkg-dark-std, 40)
+// 00dp surface
+$spc-00dp: #121824;
+// below from mix($spc-00dp, white, 95)
+// 00dp with 5% white overlay
+$spc-01dp: #1d232e;
+// below from mix($spc-00dp, white, 93)
+// 00dp with 7% white overlay
+$spc-02dp: #222833;
+// below from mix($spc-00dp, white, 92)
+// 00dp with 8% white overlay
+$spc-03dp: #242a35;
+// below from mix($spc-00dp, white, 91)
+// 00dp with 9% white overlay
+$spc-04dp: #272c37;
+
+// Set dark version of navbar (iheid red)
+.dark .navbar {
+  background-color: #E20C20;
+}
+// Set dark version of home backgrounds (dark). Uneven Sections
+.dark .home-section {
+  background-color: #12151d;
+}
+// Set dark version of home backgrounds (dark). Even Sections
+.dark .home-section:nth-of-type(even) {
+  background-color: #12151d;
+}
+
+.dark pre,
+.dark code {
+  color: #ff8fa3;
+  background-color: #242a35;
+}
+
+.dark .navbar-collapse {
+    background-color: #E20C20;
+}
+
+.dark .dropdown-item {
+    background-color: #E20C20 !important;
+}
+
+.dark .dropdown-menu {
+    background-color: #E20C20 !important;
+}
+
+.dark .outline {
+  background-color: #12151d;
+}
+// Adjusts the font color of the CTA button on the hero template
+.dark .btn-primary, .dark .btn.btn-primary.active {
+    color: white;
+}
+// Main title font color adjustments
+.hero-title {
+  color: white;
+}
+
+.hero-lead {
+  color: white;
+}
+
+a:hover, a:focus {
+    color: #E20C20;
+}
+// Resize the hero image
+.hero-media {
+  max-width: 300px;
+}
+
+/****************************** Untouched below *******************************/
+.dark .article-title a {
+  color: #fff;
+}
+
+.dark .pagination li > a,
+.pagination li > span {
+  background-color: rgb(40, 42, 54);
+  border: 1px solid #ddd;
+}
+
+body.dark,
+.dark .docs-toc-link,
+.dark .modal button.close,
+.dark input {
+  color: rgb(248, 248, 242);
+  background: $spc-bkg-dark;
+}
+
+.dark .form-control {
+  color: rgb(248, 248, 242);
+  background-color: rgb(68, 71, 90);
+
+  &::placeholder {
+    color: #fff;
+    opacity: 1;
+  }
+  &:focus {
+    background-color: rgb(68, 71, 90);
+    border-color: $sta-primary;
+    box-shadow: 0 0 0 0.2rem $sta-primary-dark;
+  }
+}
+
+.dark h1,
+.dark h2,
+.dark h3,
+.dark h4,
+.dark h5,
+.dark h6 {
+  color: #fff;
+}
+// Sets code chunk styling for dark theme.
+/*.dark pre,
+.dark code {
+  color: rgb(139, 233, 253);
+  background-color: rgb(68, 71, 90);
+}*/
+
+.dark pre {
+  /* Match `pre` bg color above. */
+  border-color: rgb(68, 71, 90);
+}
+
+.dark mark,
+.dark .mark {
+  background: rgba(233, 231, 245, 0.2);
+}
+
+.dark #MathJax_Zoom {
+  background-color: rgb(68, 71, 90) !important;
+}
+
+.dark table table {
+  background-color: rgb(40, 42, 54);
+}
+
+/* Table Striped */
+.dark table > tbody > tr:nth-child(odd) > td,
+.dark table > tbody > tr:nth-child(odd) > th {
+  background-color: rgb(50, 52, 64);
+}
+
+/* Table Hover */
+.dark table > tbody > tr:hover > td,
+.dark table > tbody > tr:hover > th {
+  background-color: rgb(60, 62, 74);
+}
+
+.dark .portrait-title h2 {
+  color: #fff;
+}
+
+.dark .portrait-title h3 {
+  color: rgba(255, 255, 255, 0.54);
+}
+
+.dark ul.ul-edu li .description p.institution {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.dark .pub-icon {
+  color: rgba(255, 255, 255, 0.54);
+}
+
+.dark .talk-metadata {
+  color: rgba(255, 255, 255, 0.54);
+}
+
+.dark .card {
+  background: #343a40;
+}
+
+.dark .card .section-subheading a {
+  color: $sta-primary;
+  border-bottom: solid 1px transparent;
+}
+
+.dark .card .card-image.hover-overlay::before {
+  background: #666;
+}
+
+.dark .card .card-image.hover-overlay::after {
+  color: #fff;
+}
+
+.dark select {
+  background: rgb(40, 42, 54);
+  color: rgb(248, 248, 242);
+}
+
+.dark .badge-light {
+  color: rgba(255, 255, 255, 0.68);
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.dark .badge-light[href]:focus,
+.dark .badge-light[href]:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.dark a.badge:focus,
+.dark a.badge:hover {
+  color: rgba(255, 255, 255, 0.68);
+}
+
+/*.dark .btn-primary,
+.dark .btn.btn-primary.active {
+  color: initial;
+}*/
+
+.dark .docs-sidebar .nav > li:not(.active) > a {
+  color: rgb(248, 248, 242);
+  background: $spc-bkg-dark;
+}
+
+
+/*******************************************************************************
+                              Header styling
+*******************************************************************************/
+
+.navbar {
+  background: $sta-menu-primary; // IHEID red in our case
+/* this is the part that takes out the shadow & the only edit */
+  box-shadow: none;
+  font-size: 14px;
+  font-weight: 600 !important;
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
+  z-index: 1030;
+  padding: 0 1rem;
+}

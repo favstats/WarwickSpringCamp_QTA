@@ -1,0 +1,17 @@
+# This file defines a font palette. To apply changes you'll need to head to
+# the params.toml file in config/.
+
+# Name your palette
+name = "iheid_fonts"
+
+# Optional Google font URL --> Head to "https://fonts.google.com/"
+google_fonts = "family=Montserrat:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Roboto:wght@100;400&family=Source+Code+Pro:ital,wght@0,300;0,400;0,700;0,900;1,300;1,400;1,700;1,900"
+
+# Define font families
+heading_font = "Montserrat"
+body_font = "Roboto"
+nav_font = "Montserrat"
+mono_font = "Source Code Pro"
+
+# Note: If you're using blogdown's live reload feature, you'll need to restart
+# the server to see the changes take effect!
