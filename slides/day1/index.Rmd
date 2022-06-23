@@ -1,0 +1,748 @@
+---
+title: "Quantitative Text Analysis in R"
+subtitle: "A gentle hands-on introduction"
+output: 
+  xaringan::moon_reader:
+    css:
+      - default
+      - css/styles.css
+      - css/fonts.css
+    lib_dir: libs
+    seal: false
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+      slideNumberFormat: "%current%<br>"
+      ratio: "16:9"
+    includes:
+      after_body: "collapseoutput.js"
+---
+
+
+layout: true
+
+<style>
+.onehundredtwenty {
+  font-size: 120%;
+   }
+
+<style>
+.ninety {
+  font-size: 90%;
+   }
+
+.eightyfive {
+  font-size: 85%;
+   }
+   
+.eighty {
+  font-size: 80%;
+   }
+   
+.seventyfive {
+  font-size: 75%;
+   }
+   
+.seventy {
+  font-size: 70%;
+   }
+   
+.fifty {
+  font-size: 50%;
+   }
+   
+.forty {
+  font-size: 40%;
+   }
+</style>
+
+
+```{r meta, echo=FALSE, warning=F, message=F}
+
+
+library(metathis)
+meta() %>%
+  meta_general(
+    description = "Quantitative Text Analysis in R",
+    generator = "xaringan and remark.js"
+  ) %>%
+  meta_name("github-repo" = "favstats/xxx") %>%
+  meta_social(
+    title = "Quantitative Text Analysis in R",
+    url = "https://www.favstats.eu",
+    og_type = "website",
+    og_author = "Fabio Votta",
+    twitter_card_type = "summary_large_image",
+    twitter_creator = "@favstats"
+  )
+```
+
+```{r setup, include=FALSE}
+# dateWritten <- format(as.Date('2020-05-04'), format="%B %d %Y")
+workshop_day <- format(as.Date("2022-06-28"), format="%B %d %Y")
+pacman::p_load(tidyverse, fontawesome, tidyverse, knitr, xaringanthemer)
+
+options(
+    htmltools.dir.version = FALSE,
+    knitr.table.format = "html",
+    knitr.kable.NA = ""
+)
+knitr::opts_chunk$set(
+    warning = FALSE,
+    message = FALSE,
+    fig.path = "figs/",
+    fig.width = 7.252,
+    fig.height = 4,
+    comment = "#>",
+    fig.retina = 3 # Better figure resolution
+)
+
+
+
+# Enables the ability to show all slides in a tile overview by pressing "o"
+xaringanExtra::use_tile_view()
+xaringanExtra::use_panelset()
+xaringanExtra::use_clipboard()
+xaringanExtra::use_share_again()
+xaringanExtra::style_share_again(share_buttons = "all")
+xaringanExtra::use_extra_styles(
+  hover_code_line = TRUE,
+  mute_unhighlighted_code = FALSE
+)
+# xaringanExtra::use_webcam()
+
+
+knitr::opts_chunk$set(warning = F, message = F) # Whether to display errors
+```
+
+
+
+---
+name: title-slide
+class: title-slide, center, middle
+
+
+<div class="my-logo-right"></div> 
+
+<br>
+
+# .font150[.fancy[`r rmarkdown::metadata$title`]] 
+
+### .font120[.fancy[`r rmarkdown::metadata$subtitle`]]
+
+*Spring Camp University of Warwick*
+
+Instructor: Fabio Votta
+
+[`r fa(name = "twitter", fill = "white")` @favstats](http://twitter.com/favstats)<br>
+[`r fa(name = "github", fill = "white")` @favstats](http://github.com/favstats)<br>
+[`r fa(name = "globe", fill = "white")` favstats.eu](https://www.favstats.eu)
+
+
+28th June 2022 (Day 1)
+
+.fifty[Link to slides: [favstats.github.io/ds3_r_intro](https://favstats.github.io/ds3_r_intro)]
+
+
+---
+
+### Your friendly neighborhood R Instructor
+
+.leftcol40[
+<img src="images/me.jpg" style="width: 90%"/>
+
+
+
+]
+
+.rightcol60[
++ Ph.D. Candidate in Political Communication at University of Amsterdam
+
++ Passionate about R and Data Science
+
++ I love to travel (when there is no pandemic)
+
++ I enjoy and (occasionally) create R memes
+
+]
+
+---
+
+### It's normal to struggle at first but it gets better!
+
+```{r, echo = F, out.width="80%", fig.align = 'center'}
+knitr::include_graphics("https://raw.githubusercontent.com/favstats/ds3_r_intro/main/images/r_first_then_new.png")
+```
+
+
+<!-- ![](images/r_first_then_new.png){width=50%} -->
+
+.fifty[Illustration adapted from [Allison Horst](https://twitter.com/allison_horst)]
+
+--
+
+  + My experience is that this stuff isn't super easy... but it gets better!
+  
+--
+  
++ Awesome inclusive community that is always ready to help
++ Active blogosphere with use cases and examples
+
+
+---
+
+## Overview
+
++ What is quantitative text analysis and why?
+
++ Pre-processsing
++ Tokenization
++ Part-of-speech tagging
+
++ rule-based methods (i.e. dictionaries)
+
+---
+
+
+
+<!-- #### What is <img src="images/Rlogo.svg" width="30px" inline-block/> ? -->
+
+
+#### What is <img src="images/Rlogo.svg" style="display: inline-block; margin: 0"; width="30px"/>?
+
+R is a .fancy[statistical] programming language developed for data analysis and visualization.
+
+#### What is <img src="images/rstudio.png" style="display: inline-block; margin: 0"; width="80px"/>?
+
+RStudio is an IDE (Integrated Development Environment).
+
+* Write, save and open R Code (.R/.Rmd files)
+
+* Provides syntax-highlighting and auto-completion & much more
+
+--
+
+# But why learn <img src="images/Rlogo.svg" style="display: inline-block; margin: 0"; width="60px"/>?
+
+<!-- ![](http://www.favstats.eu/img/headers/season_views.png) -->
+
+
+
+
+
+
+
+
+---
+
+<!-- #### What is <img src="images/Rlogo.svg" width="30px" inline-block/> ? -->
+
+
+.leftcol[
+
+#### Why learn <img src="images/Rlogo.svg" style="display: inline-block; margin: 0"; width="30px"/>?
+
+<!-- ![](http://www.favstats.eu/img/headers/season_views.png) -->
+
+
+
++ Amazing Community .forty[(but I already said that)]
+
+<!-- + Outstanding repertoire of statistical & computational methods -->
+
+<!-- -- -->
+
+<!-- + Integrates well with other programming languages (like Python) -->
+
+<!-- -- -->
+
+<!-- + Beautiful Data Visualization with `ggplot2` and more -->
+
+]
+
+.rightcol[
+
+
+![](https://raw.githubusercontent.com/allisonhorst/stats-illustrations/master/rstats-artwork/welcome_to_rstats_twitter.png)
+
+.fifty[Artist: [Allison Horst](https://github.com/allisonhorst)]
+
+]
+
+---
+
+<!-- #### What is <img src="images/Rlogo.svg" width="30px" inline-block/> ? -->
+
+
+.leftcol60[
+
+#### Why learn <img src="images/Rlogo.svg" style="display: inline-block; margin: 0"; width="30px"/>?
+
+<!-- ![](http://www.favstats.eu/img/headers/season_views.png) -->
+
+
+
++ Amazing Community .forty[(but I already said that)]
+
++ Data wrangling is accessible & fun
+
+<!-- + Outstanding repertoire of statistical & computational methods -->
+
+<!-- -- -->
+
+<!-- + Integrates well with other programming languages (like Python) -->
+
+<!-- -- -->
+
+<!-- + Beautiful Data Visualization with `ggplot2` and more -->
+
+]
+
+.rightcol40[
+
+<br>
+
+![](https://github.com/allisonhorst/stats-illustrations/blob/master/rstats-artwork/tidyverse_celestial.png?raw=true)
+
+.fifty[Artist: [Allison Horst](https://github.com/allisonhorst)]
+
+]
+
+---
+
+.leftcol60[
+
+#### Why learn <img src="images/Rlogo.svg" style="display: inline-block; margin: 0"; width="30px"/>?
+
+<!-- ![](http://www.favstats.eu/img/headers/season_views.png) -->
+
+
+
++ Amazing Community .forty[(but I already said that)]
+
++ Data wrangling is accessible & fun
+
++ Outstanding repertoire of statistical & computational methods
+
+<!-- + Integrates well with other programming languages (like Python) -->
+
+<!-- + Beautiful Data Visualization with `ggplot2` and more -->
+
+]
+
+.rightcol40[
+
+<br>
+
+![](https://pbs.twimg.com/media/E4mDfxSXEAA_kvG.jpg)
+.fifty[ [easystats](https://github.com/easystats/easystats) packageverse for statistical analysis.]
+
+
+]
+
+---
+
+.leftcol60[
+
+#### Why learn <img src="images/Rlogo.svg" style="display: inline-block; margin: 0"; width="30px"/>?
+
+<!-- ![](http://www.favstats.eu/img/headers/season_views.png) -->
+
+
+
++ Amazing Community .forty[(but I already said that)]
+
++ Data wrangling is accessible & fun
+
++ Outstanding repertoire of statistical & computational methods
+
++ Integrates well with other programming languages
+
+<!-- + Beautiful Data Visualization with `ggplot2` and more -->
+
+]
+
+.rightcol40[
+
+<br>
+
+![](https://rstudio.github.io/reticulate/images/reticulated_python.png)
+.fifty[ [reticulate](https://github.com/easystats/easystats) integrates Python into R]
+
+
+]
+
+---
+
+.leftcol60[
+
+#### Why learn <img src="images/Rlogo.svg" style="display: inline-block; margin: 0"; width="30px"/>?
+
+<!-- ![](http://www.favstats.eu/img/headers/season_views.png) -->
+
+
+
++ Amazing Community .forty[(but I already said that)]
+
++ Data wrangling is accessible & fun
+
++ Outstanding repertoire of statistical & computational methods
+
++ Integrates well with other programming languages
+
++ Beautiful data visualization with `ggplot2` 
+
+<br>
+
+<br>
+
+
+.right[.fifty[Data visualization by [Cédric Scherer](https://www.cedricscherer.com/)]]
+
+
+]
+
+.rightcol40[
+
+
+![](https://raw.githubusercontent.com/Z3tt/TidyTuesday/master/plots/2020_31/2020_31_PalmerPenguins.png?raw=true)
+
+
+]
+
+
+---
+
+
+## Google Colab
+
+
+For the purposes of this workshop we are going to use **Google Colab**.
+
+Google Colab provides an online environment for teaching.
+
+.blue[Upsides] 
+
++ No need to set up R and RStudio on your own computer
+
+.red[Downsides]
+
++ You will have to set up R and RStudio on your own computer (when you want to use R on your own)
+
+
+Link to the first Google Colab  (out of two): [tinyurl.com/ds3rintro1](https://tinyurl.com/ds3rintro1)
+
+
+---
+
+class: center, middle, inverse
+
+# .fancy[.red[Quantitative]] Text Analysis
+
+
+---
+
+class: center, middle, inverse
+
+## Working with text in R
+
+
+---
+
+# *Strings* in R
+
+--
+
+.font90[
+
+```{r}
+"Hello I am a string! In R I am known by the class of 'character'"
+```
+]
+
+
+--
+
+.font90[
+
+You can also have multiple texts in one vector by concatenating with `c()`
+
+```{r}
+c("Hello I am a string!",  "In R I am known by the class of 'character'")
+```
+]
+
+--
+
+
+.font90[
+
+And of course we may also assign this vector to an object using `<-`
+
+```{r}
+chr_vector <- c("Hello I am a string!",  "In R I am known by the class of 'character'")
+chr_vector
+```
+]
+
+---
+
+## *Strings* in data frames
+
+```{r}
+palmerpenguins::penguins_raw  %>% 
+  arrange(desc(`Culmen Length (mm)`)) %>% head() %>% 
+  select(2:5) %>% knitr::kable()
+```
+
+
+
+---
+
+
+class: center, middle, inverse
+
+## Working with text in R
+
+### String theory with the help of 
+
+### `stringr`
+
+
+
+---
+
+.leftcol75[
+
+### Manipulating Strings
+
+.font80[
+- `stringr` package is for manipulating strings. 
+]
+
+]
+
+.rightcol25[
+
+
+```{r, echo = F, out.width=100, out.height=120, fig.align='right'}
+knitr::include_graphics("https://stringr.tidyverse.org/logo.png")
+```
+
+]
+
+.font80[
+
+- It has functions for 
+
+  + **Detecting patterns in strings:** `str_detect()`
+  
+  + **replacing/removing parts:** `str_replace()` or `str_remove()`
+  
+  + **trimming whitespace:** `str_trim()` or `str_squish()`
+  
+
+]
+  
+--
+
+| functions    | what it does                             |
+|--------------|------------------------------------------|
+| `str_count` | count how often a pattern occurs             |
+| `str_extract`  | extract a pattern from a string           |
+| `str_length`   | count how many characters does a string have        |
+| `str_starts`, `str_ends` | tests if string starts/ends with certain pattern         |
+| `str_to_lower`, `str_to_upper` | to lower/upper case |
+
+
+---
+  
+### **Detecting**, extracting, replacing and removing patterns
+
+
+
+Detect a pattern:
+
+```{r}
+str_detect(string = "Hello I am a string", pattern = "I am part of the string!")
+
+```
+
+--
+
+```{r}
+str_detect(string = "Hello I am a string", pattern = "Hello")
+
+```
+  
+--
+
+```{r}
+str_detect(string = "Hello I am a string", pattern = "hello")
+
+```
+  
+
+
+---
+
+### **Detecting**, extracting, replacing and removing patterns
+
+Filter a dataset: ***WITHOUT** string manipulation*
+  
+```{r}
+
+palmerpenguins::penguins_raw %>% 
+  filter(Species == "Gentoo penguin (Pygoscelis papua)")
+
+
+```
+  
+---
+  
+  
+### **Detecting**, extracting, replacing and removing patterns
+  
+Filter a dataset: ***WITH** string manipulation*
+
+  
+```{r}
+
+palmerpenguins::penguins_raw %>% 
+  filter(str_detect(Species, "Gentoo"))
+
+
+```
+
+
+---
+  
+  
+### Detecting, **extracting**, replacing and removing patterns
+  
+  
+  
+```{r}
+str_extract(string = "Hello I am a string", pattern = "a")
+```
+```{r}
+str_extract_all(string = "Hello I am a string", pattern = "a")
+```
+  
+  
+---
+  
+### Detecting, extracting, **replacing** and removing patterns
+  
+  
+  
+```{r}
+str_replace(string = "Hello I am a string", pattern = "am", replacement = "REPLACED")
+```
+
+
+```{r}
+str_replace_all(string = "Hello I am a string", pattern = " ", "---")
+```
+  
+  
+  
+---
+  
+  
+### Detecting, extracting, replacing and **removing** patterns
+  
+  
+  
+```{r}
+str_remove(string = "Hello I am a string", pattern = "Hello ")
+```
+
+
+```{r}
+str_remove_all(string = "Hello I am a string", pattern = " ")
+```
+
+
+---
+
+
+
+### Detecting, extracting, replacing and **removing** patterns
+
+
+```{r}
+str_trim(string = "        Hello I am a string with lots of whitespace around      ")
+```
+  
+  
+```{r}
+str_squish(string = "Hello    I am a     string with lots of whitespace inbetween")
+
+```
+  
+
+---
+
+class: center, middle
+
+# .green[Reg]ular .blue[Ex]pression (.green[Regex])
+
+`^[[:alnum:]._-]+@[[:alnum:].-]+$`
+
+
+
+---
+
+## Regex
+
+1. `.` = Matches Any Character
+
+2. `\\d` = Digit (0–9)
+
+3. `\\D` = Not a digit (0–9)
+
+4 | = Either Or
+
+5. ( ) = Group
+
+6. *= 0 or more
+
+7. + = 1 or more
+
+
+---
+
+## Regex
+
+```{r}
+str_detect("muppet", "M")
+```
+
+
+---
+
+# Tokenization
+
+---
+
+# N-Grams
+
+---
+
+# Text Pre-Processing
+
+## Remove stop words
+
+## Remove punctuation
+
+## Stemming & Lemmatization
+
+---
+
+# Document-Term Matrix
+
+---
+
+# Dictionary-based methods

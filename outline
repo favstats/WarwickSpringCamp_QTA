@@ -1,0 +1,34 @@
+
+## Outline
+
+The workshop covers important basics (e.g., pre-processing, tokenization, and part-of-speech tagging) as well as three types of analytic techniques: rule-based, supervised, and unsupervised methods (dictionary methods, topic models and machine learning, respectively).
+
+13:00 to 16:00pm (Day 1) and the second part 9:30 to 16:00
+
+Day 1: 3 hours
+
++ Overview
++ What is quantitative text analysis and why?
+
++ Pre-processsing
++ Tokenization
++ Part-of-speech tagging
+
++ rule-based methods (i.e. dictionaries)
+
+Basic descriptives
+
+
+Day 2: 6h 30 minutes
+
+Unsupervised methods
+
+Topic models
+Structural topic models
+
+Supervised methods
+
+etc.
+
+
+
