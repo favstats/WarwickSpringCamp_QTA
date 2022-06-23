@@ -1,0 +1,1014 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Quantitative Text Analysis in R</title>
+    <meta charset="utf-8" />
+    <script src="libs/header-attrs/header-attrs.js"></script>
+    <link href="libs/remark-css/default.css" rel="stylesheet" />
+    <meta name="description" content="Quantitative Text Analysis in R"/>
+    <meta name="generator" content="xaringan and remark.js"/>
+    <meta name="github-repo" content="favstats/xxx"/>
+    <meta name="twitter:title" content="Quantitative Text Analysis in R"/>
+    <meta name="twitter:description" content="Quantitative Text Analysis in R"/>
+    <meta name="twitter:url" content="https://www.favstats.eu"/>
+    <meta name="twitter:card" content="summary_large_image"/>
+    <meta name="twitter:creator" content="@favstats"/>
+    <meta name="twitter:site" content="@favstats"/>
+    <meta property="og:title" content="Quantitative Text Analysis in R"/>
+    <meta property="og:description" content="Quantitative Text Analysis in R"/>
+    <meta property="og:url" content="https://www.favstats.eu"/>
+    <meta property="og:type" content="website"/>
+    <meta property="og:locale" content="en_US"/>
+    <meta property="article:author" content="Fabio Votta"/>
+    <link href="libs/tile-view/tile-view.css" rel="stylesheet" />
+    <script src="libs/tile-view/tile-view.js"></script>
+    <link href="libs/panelset/panelset.css" rel="stylesheet" />
+    <script src="libs/panelset/panelset.js"></script>
+    <script src="libs/clipboard/clipboard.min.js"></script>
+    <link href="libs/xaringanExtra-clipboard/xaringanExtra-clipboard.css" rel="stylesheet" />
+    <script src="libs/xaringanExtra-clipboard/xaringanExtra-clipboard.js"></script>
+    <script>window.xaringanExtraClipboard(null, {"button":"Copy Code","success":"Copied!","error":"Press Ctrl+C to Copy"})</script>
+    <link href="libs/shareon/shareon.min.css" rel="stylesheet" />
+    <script src="libs/shareon/shareon.min.js"></script>
+    <link href="libs/xaringanExtra-shareagain/shareagain.css" rel="stylesheet" />
+    <script src="libs/xaringanExtra-shareagain/shareagain.js"></script>
+    <link href="libs/xaringanExtra-extra-styles/xaringanExtra-extra-styles.css" rel="stylesheet" />
+    <link rel="stylesheet" href="css/styles.css" type="text/css" />
+    <link rel="stylesheet" href="css/fonts.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+
+
+
+layout: true
+
+&lt;style&gt;
+.onehundredtwenty {
+  font-size: 120%;
+   }
+
+&lt;style&gt;
+.ninety {
+  font-size: 90%;
+   }
+
+.eightyfive {
+  font-size: 85%;
+   }
+   
+.eighty {
+  font-size: 80%;
+   }
+   
+.seventyfive {
+  font-size: 75%;
+   }
+   
+.seventy {
+  font-size: 70%;
+   }
+   
+.fifty {
+  font-size: 50%;
+   }
+   
+.forty {
+  font-size: 40%;
+   }
+&lt;/style&gt;
+
+
+
+
+
+
+
+
+---
+name: title-slide
+class: title-slide, center, middle
+
+
+&lt;div class="my-logo-right"&gt;&lt;/div&gt; 
+
+&lt;br&gt;
+
+# .font150[.fancy[Quantitative Text Analysis in R]] 
+
+### .font120[.fancy[A gentle hands-on introduction]]
+
+*Spring Camp University of Warwick*
+
+Instructor: Fabio Votta
+
+[<svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:white;overflow:visible;position:relative;"><path d="M459.37 151.716c.325 4.548.325 9.097.325 13.645 0 138.72-105.583 298.558-298.558 298.558-59.452 0-114.68-17.219-161.137-47.106 8.447.974 16.568 1.299 25.34 1.299 49.055 0 94.213-16.568 130.274-44.832-46.132-.975-84.792-31.188-98.112-72.772 6.498.974 12.995 1.624 19.818 1.624 9.421 0 18.843-1.3 27.614-3.573-48.081-9.747-84.143-51.98-84.143-102.985v-1.299c13.969 7.797 30.214 12.67 47.431 13.319-28.264-18.843-46.781-51.005-46.781-87.391 0-19.492 5.197-37.36 14.294-52.954 51.655 63.675 129.3 105.258 216.365 109.807-1.624-7.797-2.599-15.918-2.599-24.04 0-57.828 46.782-104.934 104.934-104.934 30.213 0 57.502 12.67 76.67 33.137 23.715-4.548 46.456-13.32 66.599-25.34-7.798 24.366-24.366 44.833-46.132 57.827 21.117-2.273 41.584-8.122 60.426-16.243-14.292 20.791-32.161 39.308-52.628 54.253z"/></svg> @favstats](http://twitter.com/favstats)&lt;br&gt;
+[<svg aria-hidden="true" role="img" viewBox="0 0 496 512" style="height:1em;width:0.97em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:white;overflow:visible;position:relative;"><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg> @favstats](http://github.com/favstats)&lt;br&gt;
+[<svg aria-hidden="true" role="img" viewBox="0 0 496 512" style="height:1em;width:0.97em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:white;overflow:visible;position:relative;"><path d="M336.5 160C322 70.7 287.8 8 248 8s-74 62.7-88.5 152h177zM152 256c0 22.2 1.2 43.5 3.3 64h185.3c2.1-20.5 3.3-41.8 3.3-64s-1.2-43.5-3.3-64H155.3c-2.1 20.5-3.3 41.8-3.3 64zm324.7-96c-28.6-67.9-86.5-120.4-158-141.6 24.4 33.8 41.2 84.7 50 141.6h108zM177.2 18.4C105.8 39.6 47.8 92.1 19.3 160h108c8.7-56.9 25.5-107.8 49.9-141.6zM487.4 192H372.7c2.1 21 3.3 42.5 3.3 64s-1.2 43-3.3 64h114.6c5.5-20.5 8.6-41.8 8.6-64s-3.1-43.5-8.5-64zM120 256c0-21.5 1.2-43 3.3-64H8.6C3.2 212.5 0 233.8 0 256s3.2 43.5 8.6 64h114.6c-2-21-3.2-42.5-3.2-64zm39.5 96c14.5 89.3 48.7 152 88.5 152s74-62.7 88.5-152h-177zm159.3 141.6c71.4-21.2 129.4-73.7 158-141.6h-108c-8.8 56.9-25.6 107.8-50 141.6zM19.3 352c28.6 67.9 86.5 120.4 158 141.6-24.4-33.8-41.2-84.7-50-141.6h-108z"/></svg> favstats.eu](https://www.favstats.eu)
+
+
+28th June 2022 (Day 1)
+
+.fifty[Link to slides: [favstats.github.io/ds3_r_intro](https://favstats.github.io/ds3_r_intro)]
+
+
+---
+
+### Your friendly neighborhood R Instructor
+
+.leftcol40[
+&lt;img src="images/me.jpg" style="width: 90%"/&gt;
+
+
+
+]
+
+.rightcol60[
++ Ph.D. Candidate in Political Communication at University of Amsterdam
+
++ Passionate about R and Data Science
+
++ I love to travel (when there is no pandemic)
+
++ I enjoy and (occasionally) create R memes
+
+]
+
+---
+
+### It's normal to struggle at first but it gets better!
+
+&lt;img src="https://raw.githubusercontent.com/favstats/ds3_r_intro/main/images/r_first_then_new.png" width="80%" style="display: block; margin: auto;" /&gt;
+
+
+&lt;!-- ![](images/r_first_then_new.png){width=50%} --&gt;
+
+.fifty[Illustration adapted from [Allison Horst](https://twitter.com/allison_horst)]
+
+--
+
+  + My experience is that this stuff isn't super easy... but it gets better!
+  
+--
+  
++ Awesome inclusive community that is always ready to help
++ Active blogosphere with use cases and examples
+
+
+---
+
+## Overview
+
++ What is quantitative text analysis and why?
+
++ Pre-processsing
++ Tokenization
++ Part-of-speech tagging
+
++ rule-based methods (i.e. dictionaries)
+
+---
+
+
+
+&lt;!-- #### What is &lt;img src="images/Rlogo.svg" width="30px" inline-block/&gt; ? --&gt;
+
+
+#### What is &lt;img src="images/Rlogo.svg" style="display: inline-block; margin: 0"; width="30px"/&gt;?
+
+R is a .fancy[statistical] programming language developed for data analysis and visualization.
+
+#### What is &lt;img src="images/rstudio.png" style="display: inline-block; margin: 0"; width="80px"/&gt;?
+
+RStudio is an IDE (Integrated Development Environment).
+
+* Write, save and open R Code (.R/.Rmd files)
+
+* Provides syntax-highlighting and auto-completion &amp; much more
+
+--
+
+# But why learn &lt;img src="images/Rlogo.svg" style="display: inline-block; margin: 0"; width="60px"/&gt;?
+
+&lt;!-- ![](http://www.favstats.eu/img/headers/season_views.png) --&gt;
+
+
+
+
+
+
+
+
+---
+
+&lt;!-- #### What is &lt;img src="images/Rlogo.svg" width="30px" inline-block/&gt; ? --&gt;
+
+
+.leftcol[
+
+#### Why learn &lt;img src="images/Rlogo.svg" style="display: inline-block; margin: 0"; width="30px"/&gt;?
+
+&lt;!-- ![](http://www.favstats.eu/img/headers/season_views.png) --&gt;
+
+
+
++ Amazing Community .forty[(but I already said that)]
+
+&lt;!-- + Outstanding repertoire of statistical &amp; computational methods --&gt;
+
+&lt;!-- -- --&gt;
+
+&lt;!-- + Integrates well with other programming languages (like Python) --&gt;
+
+&lt;!-- -- --&gt;
+
+&lt;!-- + Beautiful Data Visualization with `ggplot2` and more --&gt;
+
+]
+
+.rightcol[
+
+
+![](https://raw.githubusercontent.com/allisonhorst/stats-illustrations/master/rstats-artwork/welcome_to_rstats_twitter.png)
+
+.fifty[Artist: [Allison Horst](https://github.com/allisonhorst)]
+
+]
+
+---
+
+&lt;!-- #### What is &lt;img src="images/Rlogo.svg" width="30px" inline-block/&gt; ? --&gt;
+
+
+.leftcol60[
+
+#### Why learn &lt;img src="images/Rlogo.svg" style="display: inline-block; margin: 0"; width="30px"/&gt;?
+
+&lt;!-- ![](http://www.favstats.eu/img/headers/season_views.png) --&gt;
+
+
+
++ Amazing Community .forty[(but I already said that)]
+
++ Data wrangling is accessible &amp; fun
+
+&lt;!-- + Outstanding repertoire of statistical &amp; computational methods --&gt;
+
+&lt;!-- -- --&gt;
+
+&lt;!-- + Integrates well with other programming languages (like Python) --&gt;
+
+&lt;!-- -- --&gt;
+
+&lt;!-- + Beautiful Data Visualization with `ggplot2` and more --&gt;
+
+]
+
+.rightcol40[
+
+&lt;br&gt;
+
+![](https://github.com/allisonhorst/stats-illustrations/blob/master/rstats-artwork/tidyverse_celestial.png?raw=true)
+
+.fifty[Artist: [Allison Horst](https://github.com/allisonhorst)]
+
+]
+
+---
+
+.leftcol60[
+
+#### Why learn &lt;img src="images/Rlogo.svg" style="display: inline-block; margin: 0"; width="30px"/&gt;?
+
+&lt;!-- ![](http://www.favstats.eu/img/headers/season_views.png) --&gt;
+
+
+
++ Amazing Community .forty[(but I already said that)]
+
++ Data wrangling is accessible &amp; fun
+
++ Outstanding repertoire of statistical &amp; computational methods
+
+&lt;!-- + Integrates well with other programming languages (like Python) --&gt;
+
+&lt;!-- + Beautiful Data Visualization with `ggplot2` and more --&gt;
+
+]
+
+.rightcol40[
+
+&lt;br&gt;
+
+![](https://pbs.twimg.com/media/E4mDfxSXEAA_kvG.jpg)
+.fifty[ [easystats](https://github.com/easystats/easystats) packageverse for statistical analysis.]
+
+
+]
+
+---
+
+.leftcol60[
+
+#### Why learn &lt;img src="images/Rlogo.svg" style="display: inline-block; margin: 0"; width="30px"/&gt;?
+
+&lt;!-- ![](http://www.favstats.eu/img/headers/season_views.png) --&gt;
+
+
+
++ Amazing Community .forty[(but I already said that)]
+
++ Data wrangling is accessible &amp; fun
+
++ Outstanding repertoire of statistical &amp; computational methods
+
++ Integrates well with other programming languages
+
+&lt;!-- + Beautiful Data Visualization with `ggplot2` and more --&gt;
+
+]
+
+.rightcol40[
+
+&lt;br&gt;
+
+![](https://rstudio.github.io/reticulate/images/reticulated_python.png)
+.fifty[ [reticulate](https://github.com/easystats/easystats) integrates Python into R]
+
+
+]
+
+---
+
+.leftcol60[
+
+#### Why learn &lt;img src="images/Rlogo.svg" style="display: inline-block; margin: 0"; width="30px"/&gt;?
+
+&lt;!-- ![](http://www.favstats.eu/img/headers/season_views.png) --&gt;
+
+
+
++ Amazing Community .forty[(but I already said that)]
+
++ Data wrangling is accessible &amp; fun
+
++ Outstanding repertoire of statistical &amp; computational methods
+
++ Integrates well with other programming languages
+
++ Beautiful data visualization with `ggplot2` 
+
+&lt;br&gt;
+
+&lt;br&gt;
+
+
+.right[.fifty[Data visualization by [Cédric Scherer](https://www.cedricscherer.com/)]]
+
+
+]
+
+.rightcol40[
+
+
+![](https://raw.githubusercontent.com/Z3tt/TidyTuesday/master/plots/2020_31/2020_31_PalmerPenguins.png?raw=true)
+
+
+]
+
+
+---
+
+
+## Google Colab
+
+
+For the purposes of this workshop we are going to use **Google Colab**.
+
+Google Colab provides an online environment for teaching.
+
+.blue[Upsides] 
+
++ No need to set up R and RStudio on your own computer
+
+.red[Downsides]
+
++ You will have to set up R and RStudio on your own computer (when you want to use R on your own)
+
+
+Link to the first Google Colab  (out of two): [tinyurl.com/ds3rintro1](https://tinyurl.com/ds3rintro1)
+
+
+---
+
+class: center, middle, inverse
+
+# .fancy[.red[Quantitative]] Text Analysis
+
+
+---
+
+class: center, middle, inverse
+
+## Working with text in R
+
+
+---
+
+# *Strings* in R
+
+--
+
+.font90[
+
+
+```r
+"Hello I am a string! In R I am known by the class of 'character'"
+```
+
+```
+#&gt; [1] "Hello I am a string! In R I am known by the class of 'character'"
+```
+]
+
+
+--
+
+.font90[
+
+You can also have multiple texts in one vector by concatenating with `c()`
+
+
+```r
+c("Hello I am a string!",  "In R I am known by the class of 'character'")
+```
+
+```
+#&gt; [1] "Hello I am a string!"                       
+#&gt; [2] "In R I am known by the class of 'character'"
+```
+]
+
+--
+
+
+.font90[
+
+And of course we may also assign this vector to an object using `&lt;-`
+
+
+```r
+chr_vector &lt;- c("Hello I am a string!",  "In R I am known by the class of 'character'")
+chr_vector
+```
+
+```
+#&gt; [1] "Hello I am a string!"                       
+#&gt; [2] "In R I am known by the class of 'character'"
+```
+]
+
+---
+
+## *Strings* in data frames
+
+
+```r
+palmerpenguins::penguins_raw  %&gt;% 
+  arrange(desc(`Culmen Length (mm)`)) %&gt;% head() %&gt;% 
+  select(2:5) %&gt;% knitr::kable()
+```
+
+&lt;table&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:right;"&gt; Sample Number &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; Species &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; Region &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; Island &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 34 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Gentoo penguin (Pygoscelis papua) &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Anvers &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Biscoe &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 18 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Chinstrap penguin (Pygoscelis antarctica) &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Anvers &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Dream &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 102 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Gentoo penguin (Pygoscelis papua) &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Anvers &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Biscoe &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 64 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Chinstrap penguin (Pygoscelis antarctica) &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Anvers &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Dream &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 116 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Gentoo penguin (Pygoscelis papua) &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Anvers &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Biscoe &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 64 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Gentoo penguin (Pygoscelis papua) &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Anvers &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Biscoe &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+
+
+---
+
+
+class: center, middle, inverse
+
+## Working with text in R
+
+### String theory with the help of 
+
+### `stringr`
+
+
+
+---
+
+.leftcol75[
+
+### Manipulating Strings
+
+.font80[
+- `stringr` package is for manipulating strings. 
+]
+
+]
+
+.rightcol25[
+
+
+&lt;img src="https://stringr.tidyverse.org/logo.png" width="100" height="120" style="display: block; margin: auto 0 auto auto;" /&gt;
+
+]
+
+.font80[
+
+- It has functions for 
+
+  + **Detecting patterns in strings:** `str_detect()`
+  
+  + **replacing/removing parts:** `str_replace()` or `str_remove()`
+  
+  + **trimming whitespace:** `str_trim()` or `str_squish()`
+  
+
+]
+  
+--
+
+| functions    | what it does                             |
+|--------------|------------------------------------------|
+| `str_count` | count how often a pattern occurs             |
+| `str_extract`  | extract a pattern from a string           |
+| `str_length`   | count how many characters does a string have        |
+| `str_starts`, `str_ends` | tests if string starts/ends with certain pattern         |
+| `str_to_lower`, `str_to_upper` | to lower/upper case |
+
+
+---
+  
+### **Detecting**, extracting, replacing and removing patterns
+
+
+
+Detect a pattern:
+
+
+```r
+str_detect(string = "Hello I am a string", pattern = "I am part of the string!")
+```
+
+```
+#&gt; [1] FALSE
+```
+
+--
+
+
+```r
+str_detect(string = "Hello I am a string", pattern = "Hello")
+```
+
+```
+#&gt; [1] TRUE
+```
+  
+--
+
+
+```r
+str_detect(string = "Hello I am a string", pattern = "hello")
+```
+
+```
+#&gt; [1] FALSE
+```
+  
+
+
+---
+
+### **Detecting**, extracting, replacing and removing patterns
+
+Filter a dataset: ***WITHOUT** string manipulation*
+  
+
+```r
+palmerpenguins::penguins_raw %&gt;% 
+  filter(Species == "Gentoo penguin (Pygoscelis papua)")
+```
+
+```
+#&gt; # A tibble: 124 x 17
+#&gt;    studyName `Sample Number` Species         Region Island Stage `Individual ID`
+#&gt;    &lt;chr&gt;               &lt;dbl&gt; &lt;chr&gt;           &lt;chr&gt;  &lt;chr&gt;  &lt;chr&gt; &lt;chr&gt;          
+#&gt;  1 PAL0708                 1 Gentoo penguin~ Anvers Biscoe Adul~ N31A1          
+#&gt;  2 PAL0708                 2 Gentoo penguin~ Anvers Biscoe Adul~ N31A2          
+#&gt;  3 PAL0708                 3 Gentoo penguin~ Anvers Biscoe Adul~ N32A1          
+#&gt;  4 PAL0708                 4 Gentoo penguin~ Anvers Biscoe Adul~ N32A2          
+#&gt;  5 PAL0708                 5 Gentoo penguin~ Anvers Biscoe Adul~ N33A1          
+#&gt;  6 PAL0708                 6 Gentoo penguin~ Anvers Biscoe Adul~ N33A2          
+#&gt;  7 PAL0708                 7 Gentoo penguin~ Anvers Biscoe Adul~ N34A1          
+#&gt;  8 PAL0708                 8 Gentoo penguin~ Anvers Biscoe Adul~ N34A2          
+#&gt;  9 PAL0708                 9 Gentoo penguin~ Anvers Biscoe Adul~ N35A1          
+#&gt; 10 PAL0708                10 Gentoo penguin~ Anvers Biscoe Adul~ N35A2          
+#&gt; # ... with 114 more rows, and 10 more variables: `Clutch Completion` &lt;chr&gt;,
+#&gt; #   `Date Egg` &lt;date&gt;, `Culmen Length (mm)` &lt;dbl&gt;, `Culmen Depth (mm)` &lt;dbl&gt;,
+#&gt; #   `Flipper Length (mm)` &lt;dbl&gt;, `Body Mass (g)` &lt;dbl&gt;, Sex &lt;chr&gt;,
+#&gt; #   `Delta 15 N (o/oo)` &lt;dbl&gt;, `Delta 13 C (o/oo)` &lt;dbl&gt;, Comments &lt;chr&gt;
+```
+  
+---
+  
+  
+### **Detecting**, extracting, replacing and removing patterns
+  
+Filter a dataset: ***WITH** string manipulation*
+
+  
+
+```r
+palmerpenguins::penguins_raw %&gt;% 
+  filter(str_detect(Species, "Gentoo"))
+```
+
+```
+#&gt; # A tibble: 124 x 17
+#&gt;    studyName `Sample Number` Species         Region Island Stage `Individual ID`
+#&gt;    &lt;chr&gt;               &lt;dbl&gt; &lt;chr&gt;           &lt;chr&gt;  &lt;chr&gt;  &lt;chr&gt; &lt;chr&gt;          
+#&gt;  1 PAL0708                 1 Gentoo penguin~ Anvers Biscoe Adul~ N31A1          
+#&gt;  2 PAL0708                 2 Gentoo penguin~ Anvers Biscoe Adul~ N31A2          
+#&gt;  3 PAL0708                 3 Gentoo penguin~ Anvers Biscoe Adul~ N32A1          
+#&gt;  4 PAL0708                 4 Gentoo penguin~ Anvers Biscoe Adul~ N32A2          
+#&gt;  5 PAL0708                 5 Gentoo penguin~ Anvers Biscoe Adul~ N33A1          
+#&gt;  6 PAL0708                 6 Gentoo penguin~ Anvers Biscoe Adul~ N33A2          
+#&gt;  7 PAL0708                 7 Gentoo penguin~ Anvers Biscoe Adul~ N34A1          
+#&gt;  8 PAL0708                 8 Gentoo penguin~ Anvers Biscoe Adul~ N34A2          
+#&gt;  9 PAL0708                 9 Gentoo penguin~ Anvers Biscoe Adul~ N35A1          
+#&gt; 10 PAL0708                10 Gentoo penguin~ Anvers Biscoe Adul~ N35A2          
+#&gt; # ... with 114 more rows, and 10 more variables: `Clutch Completion` &lt;chr&gt;,
+#&gt; #   `Date Egg` &lt;date&gt;, `Culmen Length (mm)` &lt;dbl&gt;, `Culmen Depth (mm)` &lt;dbl&gt;,
+#&gt; #   `Flipper Length (mm)` &lt;dbl&gt;, `Body Mass (g)` &lt;dbl&gt;, Sex &lt;chr&gt;,
+#&gt; #   `Delta 15 N (o/oo)` &lt;dbl&gt;, `Delta 13 C (o/oo)` &lt;dbl&gt;, Comments &lt;chr&gt;
+```
+
+
+---
+  
+  
+### Detecting, **extracting**, replacing and removing patterns
+  
+  
+  
+
+```r
+str_extract(string = "Hello I am a string", pattern = "a")
+```
+
+```
+#&gt; [1] "a"
+```
+
+```r
+str_extract_all(string = "Hello I am a string", pattern = "a")
+```
+
+```
+#&gt; [[1]]
+#&gt; [1] "a" "a"
+```
+  
+  
+---
+  
+### Detecting, extracting, **replacing** and removing patterns
+  
+  
+  
+
+```r
+str_replace(string = "Hello I am a string", pattern = "am", replacement = "REPLACED")
+```
+
+```
+#&gt; [1] "Hello I REPLACED a string"
+```
+
+
+
+```r
+str_replace_all(string = "Hello I am a string", pattern = " ", "---")
+```
+
+```
+#&gt; [1] "Hello---I---am---a---string"
+```
+  
+  
+  
+---
+  
+  
+### Detecting, extracting, replacing and **removing** patterns
+  
+  
+  
+
+```r
+str_remove(string = "Hello I am a string", pattern = "Hello ")
+```
+
+```
+#&gt; [1] "I am a string"
+```
+
+
+
+```r
+str_remove_all(string = "Hello I am a string", pattern = " ")
+```
+
+```
+#&gt; [1] "HelloIamastring"
+```
+
+
+---
+
+
+
+### Detecting, extracting, replacing and **removing** patterns
+
+
+
+```r
+str_trim(string = "        Hello I am a string with lots of whitespace around      ")
+```
+
+```
+#&gt; [1] "Hello I am a string with lots of whitespace around"
+```
+  
+  
+
+```r
+str_squish(string = "Hello    I am a     string with lots of whitespace inbetween")
+```
+
+```
+#&gt; [1] "Hello I am a string with lots of whitespace inbetween"
+```
+  
+
+---
+
+class: center, middle
+
+# .green[Reg]ular .blue[Ex]pression (.green[Regex])
+
+`^[[:alnum:]._-]+@[[:alnum:].-]+$`
+
+
+
+---
+
+## Regex
+
+1. `.` = Matches Any Character
+
+2. `\\d` = Digit (0–9)
+
+3. `\\D` = Not a digit (0–9)
+
+4 | = Either Or
+
+5. ( ) = Group
+
+6. *= 0 or more
+
+7. + = 1 or more
+
+
+---
+
+## Regex
+
+
+```r
+str_detect("muppet", "M")
+```
+
+```
+#&gt; [1] FALSE
+```
+
+
+---
+
+# Tokenization
+
+---
+
+# N-Grams
+
+---
+
+# Text Pre-Processing
+
+## Remove stop words
+
+## Remove punctuation
+
+## Stemming &amp; Lemmatization
+
+---
+
+# Document-Term Matrix
+
+---
+
+# Dictionary-based methods
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false,
+"slideNumberFormat": "%current%<br>",
+"ratio": "16:9"
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+<script>
+  (function() {
+    var divHTML = document.querySelectorAll(".details-open");
+    divHTML.forEach(function (el) {
+      var preNodes = el.getElementsByTagName("pre");
+      var outputNode = preNodes[1];
+      outputNode.outerHTML = "<details open class='output'><summary>Run</summary>" + outputNode.outerHTML + "</details>";
+    })
+  })();
+(function() {
+  var divHTML = document.querySelectorAll(".details");
+  divHTML.forEach(function (el) {
+    var preNodes = el.getElementsByTagName("pre");
+    var outputNode = preNodes[1];
+    outputNode.outerHTML = "<details class='output'><summary>Run</summary>" + outputNode.outerHTML + "</details>";
+  })
+})();
+</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
