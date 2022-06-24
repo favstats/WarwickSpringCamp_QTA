@@ -782,5 +782,20 @@ election2020_transcripts <- dir("data", full.names = T) %>%
 readr::write_csv(election2020_transcripts, "data/election2020_transcripts.csv")
   
 #stringi::stri_rand_strings(10) # 5 strings of length 10
+
+load("data/debate_transcripts.rda")
+
+debate_transcripts %>%
+  filter(election_year == "2020") %>%
+  count(speaker, sort = T)
+  filter(type == "Pres")
+  count(type)
+  count(election_year)
+  
+  
+debate_transcripts <- debate_transcripts %>% 
+  mutate(id = stringi::stri_rand_strings(n(), 10)) 
+
+write_csv(debate_transcripts, file = "data/debate_transcripts.csv")
 ```
 
