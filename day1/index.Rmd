@@ -754,6 +754,33 @@ write_csv(trump_tweets, "data/trump_tweets.csv")
 # Dictionary-based methods
 
 ```{r}
+#read_csv("")
 
+election2020_transcripts <- dir("data", full.names = T) %>%
+  discard(~str_detect(.x, "tweets")) %>%
+  map_dfr(~{
+    readr::read_csv(.x) %>%
+      mutate(path = .x)
+  }) %>%
+  mutate(speaker = case_when(
+    str_detect(speaker, "Trump") ~ "Donald Trump",
+    str_detect(speaker, "Biden") ~ "Joe Biden",
+    str_detect(speaker, "Savannah") ~ "Savannah Guthrie",
+    str_detect(speaker, "Chris Wallac") ~ "Chris Wallace",
+    str_detect(speaker, "Stephanopoulos") ~ "George Stephanopoulus",
+    T ~ speaker
+  )) %>%
+  mutate(event = case_when(
+    str_detect(path, "1st_presidential") ~ "1st Presidential Debate 2020",
+    str_detect(path, "2nd_presidential") ~ "2nd Presidential Debate 2020",
+    str_detect(path, "biden_town") ~ "Biden Town Hall 2020",
+    str_detect(path, "trump_town") ~ "Trump Town Hall 2020"
+  )) %>%
+  select(-path) %>% 
+  mutate(id = stringi::stri_rand_strings(n(), 10))
+
+readr::write_csv(election2020_transcripts, "data/election2020_transcripts.csv")
+  
+#stringi::stri_rand_strings(10) # 5 strings of length 10
 ```
 
