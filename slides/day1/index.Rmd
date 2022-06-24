@@ -720,6 +720,12 @@ class: center, middle
 str_detect("muppet", "M")
 ```
 
+```{r}
+trump_tweets <- readr::read_csv("data/trump_tweets.csv") %>% 
+  mutate(date_year =  format(date, format="%Y"))
+
+write_csv(trump_tweets, "data/trump_tweets.csv")
+```
 
 ---
 
