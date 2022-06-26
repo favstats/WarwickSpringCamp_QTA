@@ -190,6 +190,9 @@ blockquote {
 .font80 {
   font-size: 80%;
 }
+.font85 {
+  font-size: 80%;
+}
 .font90 {
   font-size: 90%;
 }
@@ -225,4 +228,13 @@ blockquote {
 }
 .font200 {
   font-size: 200%;
+}
+
+.table{
+  width:auto;
+  font-size: 12px;
+}
+
+.verysmall .table{
+  font-size: 5px;
 }
