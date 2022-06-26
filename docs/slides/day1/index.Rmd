@@ -144,7 +144,7 @@ Instructor: Fabio Votta
 
 28th June 2022 (Day 1)
 
-.fifty[Link to slides: [favstats.github.io/ds3_r_intro](https://favstats.github.io/ds3_r_intro)]
+.fifty[Link to slides: [favstats.github.io/WarwickSpringCamp_QTA/slides/day2/](https://favstats.github.io/WarwickSpringCamp_QTA/slides/day1/)]
 
 
 ---
@@ -573,11 +573,6 @@ Four Principles of Automated Text Analysis (Grimmer & Stewart 2013)
 
 *30 minutes for presentations and Q & A*
 
-
-
----
-
-## .fancy[.red[Quantitative]] Text Analysis - SOME EXAMPLES
 
 
 
@@ -1297,7 +1292,7 @@ The **one-token-per-row** can be a single word, but can also an multiple words (
 .pull-right[
 
 ```{r, echo=F}
-read_csv("../day2/data/pos_tags_trump_all.csv") %>%
+readRDS("../day2/data/pos_tags_trump_all.rds") %>%
   filter(doc_id == "1049690971934511104") %>% 
   select(token_id, token, upos) %>%
   slice(1:9) %>% knitr::kable()
@@ -1366,7 +1361,7 @@ To make these examples more fun we will use some Trump tweets to perform tokeniz
 
 ```{r}
 ## read in Trump tweets
-trump_tweets <- readr::read_csv("https://raw.githubusercontent.com/favstats/WarwickSpringCamp_QTA/main/slides/day1/data/trump_tweets.csv")
+trump_tweets <- readr::read_csv("https://raw.githubusercontent.com/favstats/WarwickSpringCamp_QTA/main/docs/slides/day1/data/trump_tweets.csv")
 ```
 
 ```{r}
