@@ -29,6 +29,8 @@
     <script src="libs/xaringanExtra-clipboard/xaringanExtra-clipboard.js"></script>
     <script>window.xaringanExtraClipboard(null, {"button":"Copy Code","success":"Copied!","error":"Press Ctrl+C to Copy"})</script>
     <link href="libs/xaringanExtra-extra-styles/xaringanExtra-extra-styles.css" rel="stylesheet" />
+    <script src="libs/kePrint/kePrint.js"></script>
+    <link href="libs/lightable/lightable.css" rel="stylesheet" />
     <link rel="stylesheet" href="css/styles.css" type="text/css" />
     <link rel="stylesheet" href="css/fonts.css" type="text/css" />
   </head>
@@ -111,10 +113,597 @@ Instructor: Fabio Votta
 
 ---
 
+class: center, middle
+
+# Part-of-speech tagging
+
+&lt;center&gt;
+
+&lt;img src="https://i2.wp.com/www.bnosac.be/images/bnosac/blog/depenceny-parsing-example3.png?w=584"&gt;
+
+  
+&lt;/center&gt;
+
+---
+
 
 ## Part-of-speech tagging
 
+&gt; Part-of-speech tagging is the process of assigning a syntactic tag to each word in a sentence. 
+
+For example, in the sentence: 
+
+`"The dog chased the cat."`
+
+1. "dog" and "cat" would be assigned the tag "noun"
+
+2. "chased" would be assigned the tag "verb." 
+
+The most common parts of speech are nouns, verbs, adjectives, adverbs, and pronouns, but there are many more!
+
 ---
+
+
+## NLP with `udpipe`
+
+
+&gt; "`udpipe` provides quick and simple annnotations giving rich output: tokenization, part-of-speech-tagging, lemmatization and dependency parsing with multi-language support. From raw text to parsed output for more than 50 languages."
+
+
+```r
+library(udpipe)
+```
+
+
+---
+
+### NLP with `udpipe`
+
+.font70[
+*The* following table contains the so-called **universal part-of-speech tags** (upos). 
+
+]
+
+.font40[
+
+| Universal POS tags | Meaning                   | Definition                                                                                                                                                                                                                      | Example                                                          |
+|--------------------|---------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------|
+| ADJ                | adjective                 | Adjectives are words that typically modify nouns and specify their properties or attributes:                                                                                                                                    | The car is **green**.                                            |
+| ADP                | adposition                | In many languages, adpositions can take the form of fixed multiword expressions,                                                                                                                                                | **in** spite **of**, because **of**, thanks **to**               |
+| ADV                | adverb                    | Adverbs are words that typically modify verbs for such categories as time, place, direction or manner.                                                                                                                          | He ate **slowly**.                                               |
+| AUX                | auxiliary                 | An auxiliary is a function word that accompanies the lexical verb of a verb phrase and expresses&lt;br&gt;grammatical distinctions not carried by the lexical verb, such as person, number, tense, mood, aspect,&lt;br&gt;voice or evidentiality. | Tense auxiliaries: **has** (done), **is** (doing), **will** (do) |
+| CCONJ              | coordinating conjunction  | A coordinating conjunction is a word that links words or larger constituents without syntactically&lt;br&gt;subordinating one to the other and expresses a semantic relationship between them.                                           | **and**, **or**, **but**                                         |
+| DET                | determiner                | Determiners are words that modify nouns or noun phrases and express the reference of the noun phrase in context.                                                                                                                | **the**, **this**, **that**, **which**                           |
+| INTJ               | interjection              | An interjection is a word that is used most often as an exclamation or part of an exclamation.                                                                                                                                  | **psst**, **ouch**                                               |
+| NOUN               | noun                      | Nouns are a part of speech typically denoting a person, place, thing, animal or idea.                                                                                                                                           | The **cat** is in the **hat**.                                   |
+| NUM                | numeral                   | A numeral is a word, functioning most typically as a determiner, adjective or pronoun, that expresses&lt;br&gt;a number and a relation to the number, such as quantity, sequence, frequency or fraction.                                 | **0**, **1**, **2**, **one**, **two**, **three**                 |
+| PART               | particle                  | Particles are function words that must be associated with another word or phrase to impart meaning&lt;br&gt;and that do not satisfy definitions of other universal parts of speech                                                       | Possessive marker: [en] ‘s                                       |
+| PRON               | pronoun                   | Pronouns are words that substitute for nouns or noun phrases, whose meaning is recoverable&lt;br&gt;from the linguistic or extralinguistic context.                                                                                      | personal pronouns: I, you, he, she, it, we, they                 |
+| PROPN              | proper noun               | A proper noun is a noun (or nominal content word) that is the name (or part of the name)&lt;br&gt;of a specific individual, place, or object.                                                                                            | **London**, **NATO**, **Mary Sue**                               |
+| PUNCT              | punctuation               | Punctuation marks are non-alphabetical characters and character groups used in many languages&lt;br&gt;to delimit linguistic units in printed text.                                                                                      | **,**, **.**, **(**, **:**                                       |
+| VERB               | verb                      | A verb is a member of the syntactic class of words that typically signal events and actions                                                                                                                                     | He **runs**.                                                     |
+
+
+
+]
+
+---
+
+### One function to rule them all: `udpipe()`
+
+`udpipe()` is the main work horse of the `udpipe` package. With it you can perform
+
++ tokenization
++ lemmatization
++ part-of-speech tagging
++ dependency parsing
+
+**all in one!**
+
+&gt;  On dependency parsing:  dependency parsing is a type of syntactic parsing that identifies the dependencies between words in a sentence. Dependency parsers typically use a set of rules to find these dependencies, and these rules can vary depending on the language being parsed.
+
+
+---
+
+#### Trump tweet example
+
+
+Let's apply `udpipe()` on the "nuclear" Trump tweet from yesterday and see what it can do for us!
+
+
+```r
+## read in Trump tweets
+trump_tweets &lt;- readr::read_csv("https://raw.githubusercontent.com/favstats/WarwickSpringCamp_QTA/main/docs/slides/day1/data/trump_tweets.csv")
+
+
+## nuclear tweet
+trump_tweet &lt;- trump_tweets[trump_tweets$id == 1165918301932916736,]
+
+trump_tweet$text
+```
+
+```
+#&gt; [1] "The story by Axios that President Trump wanted to blow up large hurricanes with nuclear weapons prior to reaching shore is ridiculous. I never said this. Just more FAKE NEWS!"
+```
+
+
+---
+
+#### Trump tweet example
+
+.pull-left[
+
+`udpipe()` expects a data.frame with two variables:
+
+1. `doc_id`, a unique identifier for your document
+2. `text`, the text you are trying to parse
+
+
+
+
+```r
+trump_tweet_ud &lt;- trump_tweet %&gt;%
+  mutate(doc_id = id)
+
+pos_tags_trump &lt;- udpipe(trump_tweet_ud, "english")
+
+pos_tags_trump %&gt;%
+  select(token, upos, lemma) %&gt;% kable()
+```
+
+]
+
+.pull-right[
+
+
+
+&lt;table class="table" style="font-size: 10px; margin-left: auto; margin-right: auto;"&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:left;"&gt; token &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; upos &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; lemma &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; dep_rel &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; The &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; DET &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; the &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; det &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; story &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; NOUN &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; story &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; nsubj &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; by &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; ADP &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; by &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; case &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Axios &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; PROPN &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Axios &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; nmod &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; that &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; SCONJ &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; that &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; mark &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; President &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; PROPN &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; President &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; nsubj &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Trump &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; PROPN &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Trump &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; flat &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; wanted &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; VERB &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; want &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; acl &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; to &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; PART &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; to &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; mark &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; blow &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; VERB &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; blow &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; xcomp &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; up &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; ADP &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; up &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; compound:prt &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; large &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; ADJ &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; large &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; amod &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; hurricanes &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; NOUN &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; hurricane &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; obj &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; with &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; ADP &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; with &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; case &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; nuclear &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; ADJ &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; nuclear &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; amod &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; weapons &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; NOUN &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; weapon &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; nmod &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; prior &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; ADJ &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; prior &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; case &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; to &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; SCONJ &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; to &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; fixed &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; reaching &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; VERB &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; reache &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; amod &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; shore &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; NOUN &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; shore &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; advcl &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; is &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; AUX &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; be &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; cop &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; ridiculous &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; ADJ &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; ridiculous &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; root &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+
+]
+
+
+---
+
+### Visualizing the nice tidy data frame that `udpipe()` puts out
+
+.font50[
+We can visualize all the output from `udpipe()` using the function (taken from [here](https://www.r-bloggers.com/2019/07/dependency-parsing-with-udpipe/#:~:text=Dependency%20parsing%20is%20an%20NLP,you%20further%20details%20about%20it.)).
+]
+
+
+
+![](https://pbs.twimg.com/media/FWAb-SFX0AAzW4n?format=jpg&amp;name=large)
+
+---
+
+### Keyword extraction
+
+.font80[
+
+
+Now we have tags for our text. Brilliant. What can we do with this? 
+
+Similar as before, we are interested in what's going on in our text. 
+
+Part-of-speech tagging can enable us to find more meaningful keywords that tell us something about the texts we are investigating.
+
+`udpipe()` offers various methods for keyword extractions:
+
+
+1.   Find keywords by doing **parts of speech tagging in order to identify nouns**
+2. Find keywords based on **collocations and co-occurrences**
+3. Find keywords based on algorithms
+  * **RAKE** (rapid automatic keyword extraction)
+4. Find keywords by looking for **phrases** (e.g. noun phrases)
+5. Find keywords based on results of **dependency parsing** (getting the subject of the text)
+
+
+]
+
+
+---
+
+#### Most frequent nouns/verbs etc.
+
+Let's now run part-of-speech tagging to find the most common nouns and verbs that Trump uses.
+
+
+```r
+# This takes a couple of minutes
+
+trump_tweets_uds &lt;- trump_tweets %&gt;%
+  filter(date_year %in% 2016:2021) %&gt;%
+  mutate(doc_id = id)  %&gt;%
+  mutate(doc_id = as.character(doc_id))
+
+pos_tags_trump_all &lt;- udpipe(trump_tweets_uds, "english")  %&gt;%
+  left_join(trump_tweet_ud)
+```
+
+
+
+
+---
+
+#### Most frequent nouns
+
+
+
+```r
+pos_tags_trump_all %&gt;%
+  filter(upos == "NOUN") %&gt;%
+  count(token, sort = T) %&gt;%
+  head(10)  %&gt;% 
+  mutate(word_n = paste0(token, ": ", n)) %&gt;% 
+  pull(word_n)
+```
+
+```
+#&gt;  [1] "amp: 3195"       "people: 2117"    "time: 1011"      "years: 944"     
+#&gt;  [5] "today: 880"      "Country: 860"    "Trump: 775"      "job: 765"       
+#&gt;  [9] "WhiteHouse: 662" "country: 624"
+```
+
+
+---
+
+#### Most frequent verbs
+
+
+
+
+```r
+pos_tags_trump_all %&gt;%
+  filter(upos == "VERB") %&gt;%
+  count(token, sort = T) %&gt;%
+  head(10)  %&gt;% 
+  mutate(word_n = paste0(token, ": ", n)) %&gt;% 
+  pull(word_n)
+```
+
+```
+#&gt;  [1] "RT: 2334"    "Thank: 1777" "have: 1591"  "get: 1093"   "do: 1027"   
+#&gt;  [6] "want: 973"   "going: 893"  "has: 799"    "doing: 771"  "done: 713"
+```
+
+---
+
+#### RAKE (rapid automatic keyword extraction)
+
+&gt; RAKE is a basic algorithm which tries to identify keywords in text. Keywords are defined as a sequence of words following one another. 
+
+Frequency of occurence plays a role as well, as well as frequency of co-occurences with other words. Word combinatiosn with higher values are considered to be more frequent and unique.
+
+If you want to know more about RAKE [see here](https://www.analyticsvidhya.com/blog/2021/10/rapid-keyword-extraction-rake-algorithm-in-natural-language-processing/).
+
+
+---
+
+#### RAKE (rapid automatic keyword extraction)
+
+.panelset[
+.panel[.panel-name[Extract RAKE]
+
+
+
+```r
+## Using RAKE
+rake_keys &lt;- keywords_rake(
+  x = pos_tags_trump_all %&gt;% mutate(lemma = stringr::str_to_lower(lemma)), 
+  term = "lemma", group = "doc_id", 
+  relevant = pos_tags_trump_all$upos %in% c("NOUN", "VERB", "ADJ")
+  )
+```
+
+]
+
+
+.panel[.panel-name[Visualization code]
+
+
+```r
+library(ggplot2)
+
+
+#stats
+rake_keys %&gt;% 
+  filter(freq &gt; 5) %&gt;%
+  arrange(-rake) %&gt;%
+  mutate(keyword = forcats::fct_reorder(keyword, rake)) %&gt;%
+  slice(1:20) %&gt;%
+  ggplot(aes(keyword, rake)) +
+  geom_col() +
+  coord_flip() +
+  theme_minimal()
+```
+
+]
+
+
+.panel[.panel-name[Visualization]
+
+&lt;img src="figs/unnamed-chunk-11-1.png" width="522.144" /&gt;
+
+]
+
+]
+
+---
+
+#### (Simple) Noun Phrases
+
+
+
+Next option is to extract (simple) noun phrases. What are they?
+
+Noun phrases are groups of words that function like nouns.
+
+Some examples:
+
+**All the children** were eating.
+
+She bought herself **a beautiful dark dress**.
+
+Dad baked **a tasty chocolate cake**.
+
+
+
+---
+
+#### (Simple) Noun Phrases
+
+.font80[
+
+How does this work? Parts of Speech tags are recoded to one of the following one-letters: 
+
+&gt; A: adjective, C: coordinating conjuction, D: determiner, M: modifier of verb, N: noun or proper noun, P: pre/postposition. 
+
+Next you can define a regular expression to indicate a sequence of parts of speech tags which you want to extract from the text.
+
+As regex we can express a (simple) noun phrase as this:
+
+&gt; `(A|N)*N(P+D*(A|N)*N)*`
+
+For more info on noun phrases [see here](https://universaldependencies.org/workgroups/newdoc/simple_noun_phrases.html).
+
+]
+
+
+---
+
+
+#### (Simple) Noun Phrases
+
+
+```r
+## Simple noun phrases (a adjective+noun, pre/postposition, optional determiner and another adjective+noun)
+pos_tags_trump_all$phrase_tag &lt;- as_phrasemachine(pos_tags_trump_all$upos, type = "upos")
+
+keyw_nounphrases &lt;- keywords_phrases(pos_tags_trump_all$phrase_tag, term = pos_tags_trump_all$token, 
+                                     pattern = "(A|N)*N(P+D*(A|N)*N)*", is_regex = TRUE, 
+                                     detailed = T)
+```
+
+
+---
+
+
+#### Most common (simple) noun phrases
+
+
+```r
+keyw_nounphrases %&gt;%
+  filter(ngram &gt;= 3) %&gt;%
+  count(keyword, sort = T) %&gt;%
+  head(20)  %&gt;% 
+  mutate(keyword_n = paste0(keyword, ": ", n)) %&gt;% 
+  pull(keyword_n)
+```
+
+```
+#&gt;  [1] "AMERICA GREAT AGAIN: 303"           "RT @ TeamTrump: 247"               
+#&gt;  [3] "Fake News Media: 233"               "Do Nothing Democrats: 114"         
+#&gt;  [5] "New York Times: 107"                "my great honor: 103"               
+#&gt;  [7] "RT @ IvankaTrump: 102"              "RT @ DanScavino: 97"               
+#&gt;  [9] "RT @ TomFitton: 94"                 "Sleepy Joe Biden: 92"              
+#&gt; [11] "RT @ DonaldJTrumpJr: 76"            "history of our: 73"                
+#&gt; [13] "RT @ EricTrump: 72"                 "RT @ TrumpWarRoom: 70"             
+#&gt; [15] "President of the United: 69"        "President of the United States: 69"
+#&gt; [17] "Donald J. Trump: 67"                "your Second Amendment: 62"         
+#&gt; [19] "Crooked Hillary Clinton: 61"        "Radical Left Democrats: 61"
+```
+
+---
+
+#### Dependency Parsing
+
+For this exercise we are going to take the words which have as dependency relation "*nsubj*" indicating the nominal subject and we are adding to that the adjective which is changing the nominal subject.
+
+
+
+```r
+stats &lt;- merge(pos_tags_trump_all, pos_tags_trump_all, 
+           by.x = c("doc_id", "paragraph_id", "sentence_id", "head_token_id"),
+           by.y = c("doc_id", "paragraph_id", "sentence_id", "token_id"),
+           all.x = TRUE, all.y = FALSE, 
+           suffixes = c("", "_parent"), sort = FALSE) 
+
+stats &lt;- subset(stats, dep_rel %in% c("nsubj") &amp; upos %in% c("NOUN", "PROPN") &amp; upos_parent %in% c("ADJ"))
+
+stats$term &lt;- paste(stats$lemma_parent, stats$lemma, sep = " ")
+```
+
+---
+
+
+#### Dependency Parsing
+
+
+```r
+stats %&gt;%
+  count(term, sort = T) %&gt;%
+  head(20)   %&gt;% 
+  mutate(term_n = paste0(term, ": ", n)) %&gt;% 
+  pull(term_n)
+```
+
+```
+#&gt;  [1] "corrupt media: 14"       "happy people: 9"        
+#&gt;  [3] "strong economy: 9"       "angry people: 8"        
+#&gt;  [5] "right Rt: 8"             "good number: 7"         
+#&gt;  [7] "right President: 7"      "right Trump: 7"         
+#&gt;  [9] "tired people: 7"         "underway voting: 7"     
+#&gt; [11] "dead ObamaCare: 6"       "interested Democrats: 6"
+#&gt; [13] "sick people: 6"          "stronger economy: 6"    
+#&gt; [15] "amazing crowd: 5"        "bad news: 5"            
+#&gt; [17] "best year: 5"            "better economy: 5"      
+#&gt; [19] "lowest unemployment: 5"  "perfect call: 5"
+```
+
 
 ## Topic Models
 
