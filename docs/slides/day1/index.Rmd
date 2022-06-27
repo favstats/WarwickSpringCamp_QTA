@@ -614,7 +614,7 @@ Google Colab provides an online environment for teaching.
 + You will have to set up R and RStudio on your own computer (when you want to use R on your own)
 
 
-Link to the first Google Colab  (out of two): [tinyurl.com/ds3rintro1](https://colab.research.google.com/drive/1cwaDldUvXMrtT1DT93UhhcdOBqATKM-E?usp=sharing)
+Link to the first Google Colab  (out of two): [inyurl.com/wqtaday1](https://colab.research.google.com/drive/1cwaDldUvXMrtT1DT93UhhcdOBqATKM-E?usp=sharing)
 
 
 ---
