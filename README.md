@@ -9,23 +9,11 @@ Status](https://api.netlify.com/api/v1/badges/ad93845a-da16-4591-bbf4-f1e2a2ccc0
 
 ## A gentle hands-on introduction
 
-We live in a digital society, and enormous amounts of textual data are
-generated every day. Text analysis for social science research is not
-new, but with recent computational advances, we can now process text
-much more efficiently and in greater quantity.
+We live in a digital society, and enormous amounts of textual data are generated every day. Text analysis for social science research is not new, but with recent computational advances, we can now process text much more efficiently and in greater quantity. Quantitative text analysis is a set of tools that help make sense of textual data by systematically extracting information from texts. 
 
-Quantitative text analysis is a set of tools that help make sense of
-textual data by systematically extracting information from texts. This
-workshop will teach you the fundamentals of quantitative text analysis
-and provide you with hands-on experience with cutting-edge methods
-implemented in R.
+This workshop will teach you the fundamentals of quantitative text analysis and provide you with hands-on experience with cutting-edge methods implemented in R. The workshop covers important basics (e.g., pre-processing, tokenization, and part-of-speech tagging) as well as three types of analytic techniques: rule-based, supervised, and unsupervised methods (dictionary methods, topic models and machine learning, respectively). 
 
-The workshop covers important basics (e.g., pre-processing,
-tokenization, and part-of-speech tagging) as well as three types of
-analytic techniques: rule-based, unsupervised, and supervised methods
-(dictionary methods, topic models and machine learning, respectively).
+By the end of this workshop, participants will have a good understanding of the potentials and limitations of quantitative text analysis, as well as some experience working with the R software packages for conducting this type of analysis.
 
-By the end of this workshop, participants will have a good understanding
-of the potentials and limitations of quantitative text analysis, as well
-as some experience working with the R software packages for conducting
-this type of analysis.
+
+<a href="https://www.freepik.com/vectors/wave-illustration">Wave illustration vector created by rawpixel.com - www.freepik.com</a>
