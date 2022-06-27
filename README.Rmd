@@ -12,6 +12,10 @@ knitr::opts_chunk$set(
 ```
 
 
+
+
+
+
 <!-- badges: start -->
 [![Netlify Status](https://api.netlify.com/api/v1/badges/ad93845a-da16-4591-bbf4-f1e2a2ccc019/deploy-status)](https://app.netlify.com/sites/coursedown/deploys)
 <!-- badges: end -->
