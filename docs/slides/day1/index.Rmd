@@ -311,7 +311,7 @@ class: center, middle, inverse
   
 <br>
   
-In practice, these approaches will often overlap!
+In practice, these approaches can often overlap!
 
 ---
 
@@ -346,6 +346,24 @@ Four Principles of Automated Text Analysis (Grimmer & Stewart 2013)
 
 > (4) Validate, Validate, Validate
 
+```{r, include = F, eval = F}
+data_corpus_guardian <- quanteda.corpora::download("data_corpus_guardian")
+
+data_corpus_guardian <- data_corpus_guardian[["documents"]] %>% 
+  rownames_to_column("text_id")
+
+data_corpus_guardian
+
+saveRDS(data_corpus_guardian, "data/data_corpus_guardian.rds")
+
+
+data_corpus_ukmanifestos <- quanteda.corpora::data_corpus_ukmanifestos[["documents"]] %>% 
+  rownames_to_column("text_id")
+
+data_corpus_ukmanifestos <- tidytext::tidy(quanteda.corpora::data_corpus_ukmanifestos)
+
+saveRDS(data_corpus_ukmanifestos, "data/data_corpus_ukmanifestos.rds")
+```
 
 
 ---
@@ -379,18 +397,18 @@ Four Principles of Automated Text Analysis (Grimmer & Stewart 2013)
 
 + Rule-based methods (i.e. dictionaries)
 
-+ Some exercises
++ Project
 
 ---
 
 
-### Overview Day 2 (9:30 to 16:00)
+### Overview Day 2 (10:00 to 16:00)
 
 + Part-of-speech tagging
   + Keyword extraction
   + RAKE, Noun phrases, dependency parisng
   
-15   M I N U T E S   B R E A K:   *10:45*
+15   M I N U T E S   B R E A K:   *11:00*
 
 + Unsupervised Machine Learning (Topic Modelling)
   
@@ -403,8 +421,6 @@ Four Principles of Automated Text Analysis (Grimmer & Stewart 2013)
 + Project (45 minutes time)
 
 *30 minutes for presentations and Q & A*
-
-
 
 
 ---
