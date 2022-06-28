@@ -1,0 +1,286 @@
+---
+title: "LDA - Topic Modelling"
+output: html_document
+---
+
+# Packages
+
+```{r}
+# if (!require("pacman")) install.packages("pacman")
+pacman::p_load(tidyverse, tidytext, LDAvis, tm,
+               udpipe, topicmodels, Polychrome,
+               ldatuning, oolong)
+
+
+data(alphabet)
+```
+
+
+# Load in the data
+
+```{r, eval = F}
+
+debate_transcripts <- readr::read_csv("https://raw.githubusercontent.com/favstats/WarwickSpringCamp_QTA/main/docs/slides/day1/data/debate_transcripts.csv") %>% 
+  ## only keep candidates:
+  filter(candidate == 1) %>%
+  ## pos expects doc_id
+  rename(doc_id = id)
+
+```
+
+# Part-of-speech tagging first
+
+```{r, eval = F}
+library(udpipe)
+
+debates_ud <- udpipe(debate_transcripts, "english", parallel.cores = 20)
+```
+
+**Some pre-processing:
+
+After that, we only keep nouns that appear at least 5 times per speech act and remove some audience chatter:
+
+```{r, eval = F}
+debates_ud_nouns <- debates_ud %>% 
+  filter(upos %in% c("NOUN"))   %>%
+  mutate(lemma = str_to_lower(lemma)) %>% 
+  count(doc_id, lemma, sort = T) %>%
+  filter(n >= 5) %>% 
+  filter(!(lemma %in% c("laughter", "applause",
+                        "crosstalk", "inaudible")))
+```
+
+
+# Cast tidy data to document-term-matrix
+
+```{r}
+debates_dtm <- debates_ud_nouns %>% 
+  cast_dtm(doc_id, lemma, n)
+
+debates_dtm
+```
+
+
+# Estimating the topic model with k = 20
+
+```{r, eval = F}
+
+# number of topics
+K <- 20
+
+
+# compute the LDA model
+topicModel <- LDA(debates_dtm, k =  K, 
+                  # set random number generator seed
+                  control=list(seed=77))
+```
+
+## Let's tale a look at the Top 10 terms:
+
+these are sorted by the betas essentially
+
+```{r}
+
+terms(topicModel, 10)
+
+```
+It looks like Topic 1 is: *health care*
+
+Topic 13 sounds like: *taxes*
+
+## Let's inspect theta (document distribution of topics)
+
+
+```{r}
+# have a look a some of the results (posterior distributions)
+tmResult <- posterior(topicModel)
+
+# for every document we have a probability distribution of its contained topics
+theta <- tmResult$topics 
+
+```
+##  Topic 1 - Health care?
+
+```{r}
+## here we extract documents that score highest on topic 1
+topic1_docs <- theta %>% 
+  as.data.frame() %>% 
+  arrange(-`1`) %>% 
+  rownames_to_column("doc_id") %>% 
+  slice(1:10) %>% 
+  pull(doc_id)
+
+debate_transcripts %>% 
+  filter(doc_id %in% topic1_docs)
+```
+
+
+##  Topic 13 - Taxes?
+
+```{r}
+## here we extract documents that score highest on topic 1
+topic13_docs <- theta %>% 
+  as.data.frame() %>% 
+  arrange(-`13`) %>% 
+  rownames_to_column("doc_id") %>% 
+  slice(1:10) %>% 
+  pull(doc_id)
+
+debate_transcripts %>% 
+  filter(doc_id %in% topic13_docs)
+```
+
+## Let's take a look at the topics over time:
+
+
+```{r}
+# tidy(topicModel)
+top5terms <- terms(topicModel, 5)
+
+topic_names <- top5terms %>% 
+  as.data.frame() %>% 
+  map(~paste0(.x, " ", collapse = "")) %>% 
+  unlist() %>% 
+  str_trim()
+
+topic_distributions <- theta %>% 
+  as.data.frame() %>%
+  set_names(topic_names) %>% 
+  rownames_to_column("doc_id") %>% 
+  left_join(debate_transcripts %>% mutate(doc_id = as.character(doc_id))) %>%
+  mutate(cycle = lubridate::floor_date(date, "4 years")) %>% 
+  group_by(cycle) %>% 
+  summarize_at(vars(2:21), mean) %>% 
+  gather(key, values, -cycle)
+
+topic_distributions %>% 
+  ggplot(aes(x=cycle, y=values, fill=key)) + 
+  geom_bar(stat = "identity") + ylab("proportion") + 
+  scale_fill_manual(values = paste0(alphabet[1:20], "FF"), name = "cycle") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+```
+
+# LDAvis
+
+```{r}
+## from here: https://www.r-bloggers.com/2015/05/a-link-between-topicmodels-lda-and-ldavis/
+topicmodels2LDAvis <- function(x, ...){
+    post <- topicmodels::posterior(x)
+    if (ncol(post[["topics"]]) < 3) stop("The model must contain > 2 topics")
+    mat <- x@wordassignments
+    LDAvis::createJSON(
+        phi = post[["terms"]], 
+        theta = post[["topics"]],
+        vocab = colnames(post[["terms"]]),
+        doc.length = slam::row_sums(mat, na.rm = TRUE),
+        term.frequency = slam::col_sums(mat, na.rm = TRUE)
+    )
+}
+
+serVis(topicmodels2LDAvis(topicModel))
+```
+
+Decreasing the lambda parameter: increase the weight of the ratio of the frequency of word given the topic / Overall frequency of the word in the documents.Important words for the given topic moves upward.
+
+# Validation with `oolong`
+
+## Word intrusion test
+
+Let's first try a `word intrusion test`.
+
+```{r}
+oolong_test <- wi(topicModel, userid = "Hadley")
+oolong_test
+```
+
+
+```{r}
+oolong_test$do_word_intrusion_test()
+```
+
+```{r}
+oolong_test$lock()
+oolong_test
+```
+
+## Topic intrusion test
+
+```{r}
+oolong_test <- ti(abstracts_keyatm, abstracts$text, userid = "Julia")
+oolong_test
+```
+
+```{r}
+oolong_test$do_topic_intrusion_test()
+```
+```{r}
+oolong_test$lock()
+```
+
+
+
+# Finetuning the LDA model
+
+```{r}
+library(ldatuning)
+
+result <- FindTopicsNumber(
+  debates_dtm,
+  topics = seq(from = 10, to = 100, by = 5),
+  metrics = c("Griffiths2004", "CaoJuan2009", 
+              "Arun2010", "Deveaud2014"),
+  method = "Gibbs",
+  control = list(seed = 77),
+  mc.cores = 23L,
+  verbose = TRUE
+)
+```
+Learn more about the metrics here: https://rpubs.com/nikita-moor/107657
+
+```{r}
+FindTopicsNumber_plot(result)
+
+```
+# General advice:
+
++ avoid model selection solely based on numeric evaluation measures
+
++ make theoretically sound selections and check manually
+
+## Workflow:
+
+1. Preprocessing: 
+  a. clean documents
+  b. Proceed as appropriate with: lowercase, remove punctuation, remove stop words, remove infrequent terms, lemmatization/stemming
+
+
+2. Run LDA
+  a. Don't forget to set a seed!
+  
+3. Compute a variety of models with different K parameters
+  a. for each K, check quantitative measures
+  b. for each K, select model with best interpretable K topics (use LDAvis as helper tool)
+  
+  
+4. Validate selected model
+  * rank words: term probability 
+  * rank topics: topic probability 
+  * read N documents for each topic with highest topic probability
+ 
+
+5. Final analysis: time series, cross-sectional analysis
+  * leave out uninterpretable models
+  * leave out unreliable models
+
+
+Advice comes mostly from here:
+https://github.com/tm4ss/tm4ss.github.io
+
+
+
+
+
+
+
+
+

@@ -818,9 +818,30 @@ We are going to take a look at Latent Dirichlet Allocation (LDA) in particular (
 
 An LDA has two model assumptions:
 
-+ every document can be represented as a distribution of topics - `\(\theta\)`
++ every document can be represented as a distribution of topics - `\(\theta\)` (also sometimes called `\(\gamma\)`)
 
 + every topic can be represented as distribution of terms - `\(\beta\)`
+
+
+---
+
+## Document-term matrix
+
+Most topic models take data as a so-called "*document-term-matrix* (dtm). A dtm is a matrix (with rows and columns) that counts the number of times terms occur in specific documents.
+
+This is what it looks like:
+
+![](images/dtm.png)
+
+---
+
+## Debates
+
+&lt;p style="font-size:1px"&gt;&lt;/p&gt; | &lt;p style="font-size:1px"&gt;&lt;/p&gt;
+-------------------|------------------
+ &lt;img src="https://github.com/jamesmartherus/debates/raw/master/man/figures/logo.png" width = "150"&gt; | &lt;p style="font-size:10px"&gt;"`debates` provides easy access to debate transcripts from Presidential, Vice Presidential, and primary candidate debates. The current version includes Presidential and Vice-Presidential debate transcripts starting in 1960, and for most debates from the 2012, 2016, and 2020 primary elections."&lt;/p&gt;
+
+Let's figure out topics in debates!
 
 
 ---
@@ -836,123 +857,110 @@ So in the interest of time, we will **only keep lemmatized nouns** (as identifie
 
 A similar approach has been taken by Jacobi et al., 2016, and Lind et al., 2021.
 
----
-
-
-```r
-reddit_dtm &lt;- sotu_ud %&gt;%
-  filter(upos == "NOUN") %&gt;% 
-  count(doc_id, word, sort = T) %&gt;%
-  filter(n &gt; 50) %&gt;% 
-  cast_dtm(submission_id, word, n)
-```
-
+*continue in script topic_modelling.Rmd*
 
 ---
 
 
-```r
-yo &lt;- read_csv2("https://raw.githubusercontent.com/tm4ss/tm4ss.github.io/master/data/sotu_paragraphs.csv")
+class: center, middle, inverse
 
-yo2 &lt;- read_csv2("https://raw.githubusercontent.com/tm4ss/tm4ss.github.io/master/data/sotu.csv")
-
-yo %&gt;% count(date)
-
-yo %&gt;% 
-  sample_n(10) %&gt;% 
-  pull(text)
-```
-
-```r
-library(udpipe)
-
-# sotu_ud &lt;- udpipe(yo, "english", parallel.cores = 4)
-
-saveRDS(sotu_ud, file = "data/sotu_ud.rds")
-
-sotu_ud_nouns &lt;- sotu_ud %&gt;% 
-  filter(upos %in% c("NOUN"))   %&gt;%
-  # filter(upos != "PUNCT") %&gt;% 
-  mutate(lemma = str_to_lower(lemma)) %&gt;% 
-  # anti_join(stop_words %&gt;% rename(lemma = word)) %&gt;% 
-  # left_join(yo %&gt;% select(doc_id, speech_doc_id) %&gt;% mutate(doc_id = as.character(doc_id))) %&gt;% 
-  count(doc_id, lemma, sort = T) %&gt;%
-  # rename(doc_id = speech_doc_id) %&gt;% 
-  filter(n &gt;= 5)
-
-library(tidytext)
-
-sotu_dtm &lt;- sotu_ud_nouns %&gt;% 
-  cast_dtm(doc_id, lemma, n)
-
-sotu_ud %&gt;% count(upos)
-```
+# Supervised Machine Learning
 
 
+---
 
-```r
-require(topicmodels)
+## Supervised Machine Learning
 
-# number of topics
-# K &lt;- 20
-# set random number generator seed
-set.seed(9161)
-# compute the LDA model, inference via 1000 iterations of Gibbs sampling
-topicModel &lt;- LDA(sotu_dtm, k =  20)
-```
+&gt; Supervised machine learning is a type of machine learning algorithm that uses a labelled dataset to train a model to make predictions.
 
-```r
-terms(topicModel, 10)
-```
+In comparison to unsupervised machine learning, supervised learning requires labels often provided by the researchers.
 
-```r
-# have a look a some of the results (posterior distributions)
-tmResult &lt;- posterior(topicModel)
+The labelled dataset is a collection of data that has been labelled with the desired outcome. The model is then able to use the labelled dataset to learn how to map the input data to the correct output. 
 
-# for every document we have a probaility distribution of its contained topics
-theta &lt;- tmResult$topics 
-# dim(theta)               # nDocs(DTM) distributions over K topics
+ 
 
-# tidy(topicModel)
+---
 
-ww &lt;- theta %&gt;% 
-  as.data.frame() %&gt;%
-  set_names(topic_names) %&gt;% 
-  rownames_to_column("doc_id") %&gt;% 
-  left_join(yo %&gt;% mutate(doc_id = as.character(doc_id))) %&gt;%
-  # left_join(yo %&gt;% mutate(doc_id = as.character(speech_doc_id))) %&gt;% 
-  mutate(decade = lubridate::floor_date(date, "10 years")) 
+## Supervised Machine Learning
 
-library(Polychrome)
+Supervised machine learning is a powerful tool for text classification. It can be used to automatically categorize texts into different classes. 
 
-data(alphabet)
+For example, it can be used to classifier emails into spam and non-spam, or articles into different topics. 
 
-
-ww %&gt;% 
-  group_by(decade) %&gt;% 
-  summarize_at(vars(2:21), mean) %&gt;% 
-  gather(key, values, -decade) %&gt;% 
-  ggplot(aes(x=decade, y=values, fill=key)) + 
-  geom_bar(stat = "identity") + ylab("proportion") + 
-  scale_fill_manual(values = paste0(alphabet[1:20], "FF"), name = "decade") +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1))
-
-jj &lt;- terms(topicModel, 5)
-
-topic_names &lt;- jj %&gt;% 
-  as.data.frame() %&gt;% 
-  map(~paste0(.x, " ", collapse = "")) %&gt;% 
-  unlist() %&gt;% 
-  str_trim()
-```
+Supervised machine learning is also used for sentiment analysis, which is used to automatically detect the sentiment of a text.
 
 
 
 
 ---
 
-## Supervised machine learning
 
+## Train and Test data
+
+
+Training data is the data that we use to train our models. This data is used to fit the model and is used to optimize its parameters. 
+
+Test data is the data that we use to evaluate our trained model. This data is used to see how well the model performs on unseen data. 
+
+It's important to have both training and test data because we want to make sure that our model is generalizable. 
+
+That is, we want to make sure that our model can perform well on data that it hasn't seen before. 
+
+If we only had training data, we would have no way of knowing how our model would perform on new, unseen data. This could lead to **overfitting**, where our model performs well on training data but poorly on test data. 
+
+
+
+---
+
+### What is cross-validation in supervised machine learning?
+
+&gt; Cross-validation is a technique used to assess the accuracy of a model and prevent overfitting by repeatedly resampling the dataset and re-fitting the model.
+
+.font80[
+Why is cross-validation necessary?
+
+Cross-validation is necessary because it provides a more accurate estimate of the model's performance than using the training set alone. It also helps to prevent overfitting.
+
+What are the benefits of cross-validation?
+
+- improved accuracy
+- prevention of overfitting
+
+What are the drawbacks of cross-validation?
+
+- extra computational time
+]
+
+
+
+---
+
+## Hyperparameters in Supervised Machine Learning
+
+.font70[
+
+*What are hyperparameters?*
+
+Hyperparameters are parameters that define the overall structure of a machine learning model. They are used to control the learning process of the model.
+
+They can significantly impact the performance of a machine learning model.
+
+*How can hyperparameters be tuned?*
+
+Hyperparameters can be tuned using a variety of methods, including grid search, random search, and manual search.
+
+*What are the benefits of tuning hyperparameters?*
+
+Tuning hyperparameters can improve the performance of a machine learning model and make it more robust.
+
+*What are the risks of tuning hyperparameters?*
+
+Tuning hyperparameters can be time-consuming and may not always lead to improved performance. 
+
+]
+
+
+*continue in script smltar.Rmd*
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>

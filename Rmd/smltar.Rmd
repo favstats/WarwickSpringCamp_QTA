@@ -1,0 +1,585 @@
+---
+title: "Supervised Machine Learning for Text Analysis in R"
+output: html_document
+---
+
+This tutorial is copied and shortened from Chapter 7 of the great book of `Supervised Machine Learning for Text Analysis in R`, check it out here: https://smltar.com/mlclassification.html
+
+# Classification 
+
+We can use machine learning to predict *labels* on documents using a classification model. 
+
+For our classification example, let's consider a dataset of Republican and Democrat party platforms from 2016 and 2020. We read it in with: `read_csv()`.
+
+```{r manifestos, message=FALSE}
+pacman::p_load(tidyverse, tidymodels, textrecipes, vip, discrim)
+
+# manifestos <- read_csv("manifestos.csv.gz")
+
+manifestos <- readRDS("manifestos.rds") 
+```
+
+We can start by taking a quick `glimpse()` at the data to see what we have to work with. 
+
+```{r, dependson="manifestos"}
+glimpse(manifestos)
+```
+
+Here, we will build classification models to predict **what type of financial `party` the manifestos are referring to**, i.e., a label or categorical variable. 
+
+
+## A first classification model {#classfirstattemptlookatdata}
+
+For our first model, let's build a binary classification model to predict whether a submitted manifesto is about "Credit reporting, credit repair services, or other personal consumer reports" or not. 
+
+> This kind of "yes or no" binary classification model is both common and useful in real-world text machine learning problems.
+
+The outcome variable `party` contains more categories than this, so we need to transform this variable to only contain the values "Credit reporting, credit repair services, or other personal consumer reports" and "Other".
+
+It is always a good idea to look at your data! Here are the first six manifestos:
+
+```{r, dependson="manifestos", linewidth=80}
+head(manifestos$text)
+
+
+```
+
+
+
+### Building our first classification model {#classfirstmodel}
+
+This data set includes more possible predictors than the text alone, but for this first model we will only use the text variable `text`.
+
+Let's split the data into training and testing data sets.
+
+We can use the `initial_split()` function from **rsample** to create this binary split of the data. 
+
+The `strata` argument ensures that the distribution of `party` is similar in the training set and testing set. 
+
+Since the split uses random sampling, we set a seed so we can reproduce our results.
+
+```{r, manifestossplit}
+
+set.seed(1234)
+
+manifestos2class <- manifestos
+
+manifestos_split <- initial_split(manifestos2class, strata = party)
+manifestos_train <- training(manifestos_split)
+manifestos_test <- testing(manifestos_split)
+```
+
+The dimensions of the two splits show that this first step worked as we planned.
+
+```{r, dependson="manifestossplit"}
+dim(manifestos_train)
+dim(manifestos_test)
+```
+
+Next we need to preprocess this data to prepare it for modeling; we have text data, and we need to build numeric features for machine learning from that text.
+
+The **recipes** package, part of tidymodels, allows us to create a specification of preprocessing steps we want to perform. 
+
+We initialize our set of preprocessing transformations with the `recipe()` function, using a formula expression to specify the variables, our outcome plus our predictor, along with the data set.
+
+```{r manifestorec1, dependson="manifestossplit"}
+manifestos_rec <-
+  recipe(party ~ text, data = manifestos_train)
+```
+
+Now we add steps to process the text of the manifestos; we use **textrecipes** to handle the `text` variable. 
+
+First we tokenize the text to words with `step_tokenize()`. By default this uses `tokenizers::tokenize_words()`.
+
+Before we calculate tf-idf\index{tf-idf} we use `step_tokenfilter()` to only keep the 1000 most frequent tokens, to avoid creating too many variables in our first model. 
+
+To finish, we use `step_tfidf()` to compute tf-idf.
+
+```{r manifestorec4, dependson="manifestorec1"}
+
+manifestos_rec <- manifestos_rec %>%
+  step_tokenize(text) %>%
+  step_tokenfilter(text, max_tokens = 500) %>%
+  step_tfidf(text)
+```
+
+Now that we have a full specification of the preprocessing recipe, we can build up a tidymodels `workflow()` to bundle together our modeling components.
+
+
+```{r manifestowf, dependson="manifestorec4"}
+manifesto_wf <- workflow() %>%
+  add_recipe(manifestos_rec)
+```
+
+Let's start with a logistic regression model, which is available in the tidymodels package.
+
+
+Here we have only kept the 1000 most frequent tokens, but we could have kept more tokens. For now, we will limit the model to a moderate number of tokens.
+
+
+```{r nbspec}
+
+log_spec <- logistic_reg(mixture = 0, penalty = 0.1)
+
+log_spec
+```
+
+We can add the logistic regression model to our workflow:
+
+```{r}
+manifesto_wf <- manifesto_wf %>%
+  add_model(log_spec)
+```
+
+
+Now we have everything we need to fit our first classification model. We can fit this workflow to our training data.
+
+```{r nbfit, dependson=c("nbspec", "manifestowf")}
+
+log_fit <- manifesto_wf %>%
+  fit(data = manifestos_train)
+
+```
+
+We have trained our first classification model!
+
+### Evaluation
+
+We should not use the test set to compare models or different model parameters. 
+
+The test set is a precious resource that should only be used at the end of the model training process to estimate performance on new data. 
+
+Instead, we will use *resampling* methods to evaluate our model.
+
+Let's use resampling to estimate the performance of the naive Bayes classification model we just fit. 
+
+We can do this using resampled data sets built from the training set. Let's create 10-fold cross-validation sets, and use these resampled sets for performance estimates.
+
+```{r manifestosfolds, dependson="manifestossplit"}
+set.seed(234)
+
+manifestos_folds <- vfold_cv(manifestos_train)
+
+manifestos_folds
+```
+
+Each of these splits contains information about how to create cross-validation folds from the original training data. 
+
+In this example, 90% of the training data is included in each fold, and the other 10% is held out for evaluation.
+
+For convenience, let's again use a `workflow()` for our resampling estimates of performance. 
+
+
+
+```{r nbwf, dependson=c("nbspec", "manifestorec4")}
+
+log_wf <- workflow() %>%
+  add_recipe(manifestos_rec) %>%
+  add_model(log_spec)
+
+log_wf
+```
+
+In the last section, we fit one time to the training data as a whole. Now, to estimate how well that model performs, let's fit the model many times, once to each of these resampled folds, and then evaluate on the heldout part of each resampled fold.
+
+```{r nbrs, dependson=c("nbwf", "manifestosfolds")}
+
+log_rs <- fit_resamples(
+  log_wf,
+  manifestos_folds,
+  control = control_resamples(save_pred = TRUE)
+)
+
+```
+
+We can extract the relevant information using `collect_metrics()` and `collect_predictions()`.
+
+```{r nbrsmetrics}
+
+log_rs_metrics <- collect_metrics(log_rs)
+log_rs_predictions <- collect_predictions(log_rs)
+
+```
+
+What results do we see, in terms of performance metrics?
+
+```{r}
+log_rs_metrics
+```
+
+The default performance parameters for binary classification are accuracy and ROC AUC (area under the receiver operator characteristic curve). For these resamples, the average accuracy is
+
+```{r}
+log_rs_metrics %>% 
+  filter(.metric == "accuracy") %>% 
+  pull(mean) %>% 
+  scales::percent(accuracy = 0.1)
+```
+
+
+
+> Accuracy and ROC AUC are performance metrics used for classification models. For both, values closer to 1 are better.
+
+> Accuracy is the proportion of the data that is predicted correctly. Be aware that accuracy can be misleading in some situations, such as for imbalanced data sets.
+
+> ROC AUC measures how well a classifier performs at different thresholds. The ROC curve plots the true positive rate against the false positive rate; AUC closer to 1 indicates a better-performing model, while AUC closer to 0.5 indicates a model that does no better than random guessing.
+
+Figure below shows the ROC curve, a visualization of how well a classification model can distinguish between classes, for our first classification model on each of the resampled data sets.
+
+```{r firstroccurve, opts.label = "fig.square"}
+log_rs_predictions %>%
+  group_by(id) %>%
+  roc_curve(truth = party, `.pred_Democratic Party`) %>%
+  autoplot() +
+  labs(
+    color = NULL,
+    title = "ROC curve for Manifestos",
+    subtitle = "Each resample fold is shown in a different color"
+  )
+```
+
+The area under each of these curves is the `roc_auc` metric we have computed. 
+
+If the curve was close to the diagonal line, then the model's predictions would be no better than random guessing.
+
+Another way to evaluate our model is to evaluate the confusion matrix. A confusion matrix tabulates a model's false positives and false negatives for each class.
+
+The function `conf_mat_resampled()` computes a separate confusion matrix for each resample and takes the average of the cell counts. 
+
+This allows us to visualize an overall confusion matrix rather than needing to examine each resample individually.
+
+```{r firstheatmap, dependson="nbrs", fig.cap='Confusion matrix for naive Bayes classifier, showing some bias toward predicting the credit category'}
+
+conf_mat_resampled(log_rs, tidy = FALSE) %>%
+  autoplot(type = "heatmap")
+
+```
+
+In the figure above, the squares for "Credit"/"Credit" and "Other"/"Other" have a darker shade than the off-diagonal squares. 
+
+This is a good sign, meaning that our model is right more often than not! However, this first model is struggling somewhat since many observations from the "Credit" class are being mispredicted as "Other".
+
+
+> One metric alone cannot give you a complete picture of how well your classification model is performing. The confusion matrix is a good starting point to get an overview of your model performance, as it includes rich information.
+
+
+This is real data from a government agency, and these kinds of performance metrics must be interpreted in the context of how such a model would be used. 
+
+What happens if the model we trained gets a classification wrong for a consumer manifesto? 
+
+What impact will it have if more "Other" manifestos are correctly identified than "Credit" manifestos, either for consumers or for policymakers? 
+
+## Compare to the null model {#classnull}
+
+We can assess a model like this one by comparing its performance to a "null model" or baseline model, a simple, non-informative model that always predicts the largest class for classification. 
+
+Such a model is perhaps the simplest heuristic or rule-based alternative that we can consider as we assess our modeling efforts.
+
+We can build a classification `null_model()` specification and add it to a `workflow()` with the same preprocessing recipe we used in the previous section, to estimate performance.
+
+```{r nullrs2, dependson=c("nbwf", "manifestosfolds")}
+
+null_classification <- null_model() %>%
+  set_engine("parsnip") %>%
+  set_mode("classification")
+
+null_rs <- workflow() %>%
+  add_recipe(manifestos_rec) %>%
+  add_model(null_classification) %>%
+  fit_resamples(
+    manifestos_folds
+  )
+```
+
+What results do we obtain from the null model, in terms of performance metrics?
+
+```{r, dependson="nullrs"}
+null_rs %>%
+  collect_metrics()
+```
+
+The accuracy and ROC AUC indicate that this null model is dramatically worse than even our first model. 
+
+The text is predictive relative to the category we are building models for.
+
+# Tune
+
+```{r}
+tune_spec <- logistic_reg(penalty = tune(), mixture = 0) %>%
+  set_mode("classification") %>%
+  set_engine("glmnet")
+
+manifestos_rec_v2 <- recipe(party ~ text, data = manifestos_train) %>%
+  step_tokenize(text) %>%
+  step_tokenfilter(text,
+                   max_tokens = tune()) %>%
+  step_tfidf(text) 
+
+manifestos_wf2 <- workflow() %>%
+  add_recipe(manifestos_rec_v2) %>% 
+  add_model(tune_spec)
+
+  
+```
+
+
+```{r}
+final_grid <- grid_regular(
+  penalty(range = c(-4, 0)),
+  max_tokens(range = c(100, 3000)),
+  levels = c(penalty = 20, max_tokens = 3)
+)
+
+```
+
+```{r,eval = F}
+set.seed(2020)
+tune_rs <- tune_grid(
+  manifestos_wf2,
+  manifestos_folds,
+  grid = final_grid,
+  metrics = metric_set(accuracy, sensitivity, specificity)
+)
+
+
+saveRDS(tune_rs, file = "data/final_grid.rds")
+```
+
+```{r}
+tune_rs <- readRDS("data/final_grid.rds")
+```
+
+
+```{r}
+autoplot(tune_rs) +
+  labs(
+    color = "Number of tokens",
+    title = "Model performance across regularization penalties and tokens",
+    subtitle = paste("We can choose a simpler model with higher regularization")
+  )
+```
+
+
+Since this is our final version of this model, we want to choose final parameters and update our model object so we can use it with new data. We have several options for choosing our final parameters, such as selecting the numerically best model. Instead, let’s choose a simpler model within some limit around that numerically best result, with more regularization that gives close-to-best performance. Let’s choose by percent loss compared to the best model (the default choice is 2% loss), and let’s say we care most about overall accuracy (rather than sensitivity or specificity).
+
+```{r}
+choose_acc <- tune_rs %>%
+  select_by_pct_loss(metric = "accuracy", -penalty)
+
+choose_acc
+```
+
+```{r}
+final_wf <- finalize_workflow(manifestos_wf2, choose_acc)
+final_wf
+```
+
+
+# Last Fit
+
+```{r}
+
+final_fitted <- last_fit(final_wf, manifestos_split)
+
+collect_metrics(final_fitted)
+
+```
+
+
+```{r}
+collect_predictions(final_fitted) %>%
+  conf_mat(truth = party, estimate = .pred_class) %>%
+  autoplot(type = "heatmap")
+```
+
+
+```{r}
+collect_predictions(final_fitted)  %>%
+  roc_curve(truth = party, `.pred_Democratic Party`) %>%
+  autoplot() +
+  labs(
+    color = NULL,
+    title = "ROC curve for Manifestos",
+    subtitle = "With final ridge regularized classifier on the test set"
+  )
+```
+
+```{r}
+final_fitted %>% extract_fit_parsnip() %>%
+  vip::vi() %>% 
+  mutate(Sign = ifelse(Sign == "POS", "Republican", "Democrat")) %>% 
+  group_by(Sign) %>%
+  top_n(20, wt = abs(Importance)) %>%
+  ungroup() %>%
+  mutate(
+    Importance = abs(Importance),
+    Variable = str_remove(Variable, "tfidf_text_"),
+    Variable = fct_reorder(Variable, Importance)
+  ) %>%
+  ggplot(aes(x = Importance, y = Variable, fill = Sign)) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~Sign, scales = "free_y") +
+  labs(y = NULL)
+```
+
+
+
+```{r}
+manifestos_bind <- collect_predictions(final_fitted) %>%
+  bind_cols(manifestos_test %>% select(-party))
+
+manifestos_bind %>% 
+  arrange(desc(`.pred_Democratic Party`)) %>% 
+  slice(1:10)
+```
+
+
+```{r}
+manifestos_bind %>% 
+  arrange(desc(`.pred_Republican Party`)) %>% 
+  slice(1:50)
+```
+
+```{r}
+manifestos_bind %>% 
+  select(`.pred_Democratic Party`, `.pred_Republican Party`) %>% 
+  gather() %>% 
+  ggplot(aes(value, fill = key)) +
+  geom_histogram() +
+  facet_wrap(~key)
+```
+
+```{r}
+manifestos_bind %>% 
+  mutate(wrong = .pred_class == party) %>% 
+  select(wrong, `.pred_Democratic Party`, `.pred_Republican Party`) %>% 
+  gather(key, value, -wrong) %>% 
+  ggplot(aes(value, fill = key)) +
+  geom_histogram() +
+  facet_wrap(wrong~key)
+```
+
+
+# Supervised machine learning with tidymodels
+
+## Getting training data
+
+For machine learning, we need annotated training data. Fortunately,
+there are many review data files available for free. For this exercise,
+we will use a set of Amazon movie reviews cached as CSV on our github
+site. See <http://deepyeti.ucsd.edu/jianmo/amazon/index.html> for other
+(and more up-to-date) Amazon product reviews.
+
+```{r}
+reviews = read_csv("https://raw.githubusercontent.com/ccs-amsterdam/r-course-material/master/data/reviews.csv") %>% 
+  mutate(rating=as.factor(ifelse(overall==5, "good", "bad")))
+head(reviews)
+table(reviews$overall)
+```
+
+
+Using the preprocessing steps from
+[textrecipes](https://textrecipes.tidymodels.org), we can also use
+tidymodels to test our data.
+
+Although this involves a bit more steps if you are already using
+quanteda, using tidymodels allows more flexibility in selecting and
+tuning the best models.
+
+The example below will quickly show how to train and test a model using
+these recipes. See the [machine learning with
+Tidymodels](machine_learning.md) handout and/or the [tidyverse
+documentation](https://tidyverse.org) for more information.
+
+## Using `textrecipes` to turn text into features
+
+```{r}
+rec <- recipe(rating ~ summary + reviewText, data=reviews) %>%
+  step_tokenize(all_predictors())  %>%
+  step_tokenfilter(all_predictors(), min_times = 3) %>%
+  step_tf(all_predictors())
+```
+
+
+
+We can inspect the results of the preprocessing by `prepping` the recipe
+and baking the training data:
+
+```{r}
+rec %>% 
+  prep(reviews) %>%
+  bake(new_data=NULL) %>% 
+  select(1:10)
+```
+
+
+## Fitting and testing a model
+
+First, we create a *worflow* from the recipe and model specification.
+Let’s start with a logistic regression model:
+
+
+```{r}
+lr_workflow = workflow() %>%
+  add_recipe(rec) %>%
+  add_model(logistic_reg(mixture = 0, penalty = 0.1))
+```
+
+Now, we can split our data, fit the model on the train data, and
+validate it on the test data:
+
+```{r}
+split <- initial_split(reviews)
+
+m <- fit(lr_workflow, data = training(split))
+
+predict(m, new_data=testing(split)) %>%
+  bind_cols(select(testing(split), rating)) %>%
+  rename(predicted=.pred_class, actual=rating) %>%
+  metrics(truth = actual, estimate = predicted)
+```
+
+
+
+To see which words are the most important predictors, we
+can use the `vip` package to extract the predictors, and then use
+regular tidyverse/ggplot functions to visualize it:
+
+```{r}
+m %>% extract_fit_parsnip() %>%
+  vip::vi() %>% 
+  group_by(Sign) %>%
+  top_n(20, wt = abs(Importance)) %>%
+  ungroup() %>%
+  mutate(
+    Importance = abs(Importance),
+    Variable = str_remove(Variable, "tf_"),
+    Variable = fct_reorder(Variable, Importance)
+  ) %>%
+  ggplot(aes(x = Importance, y = Variable, fill = Sign)) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~Sign, scales = "free_y") +
+  labs(y = NULL)
+```
+
+
+The positive predictors make perfect sense: *great*, *best*,
+*excellent*, etc. So, interestingly *not*, *but*, and *ok* are the best
+negative predictors, and *good* in the summary is also not a good sign.
+This makes it interesting to see if using ngrams will help performance,
+as it is quite possible that it is *not good*, rather than good. Have a
+look at the [textrecipes
+documentation](https://textrecipes.tidymodels.org/reference/) to see the
+possibilities for text preprocessing.
+
+Also, we just tried out a regularization penalty of 0.1, and it is quite
+possible that this is not the best choice possible. Thus, it is a good
+idea to now do some hyperparameter tuning for the regularization penalty
+and other parameters. Take a look at the [machine learning
+handout](machine_learning.md) and/or the [tune
+documentation](https://tune.tidymodels.org/) to see how to do parameter
+tuning.
+
+Of course, you can also try one of the other classification models in
+[parsnip](https://parsnip.tidymodels.org/), and/or try a regression
+model instead to predict the actual star value.
