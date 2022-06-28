@@ -144,7 +144,7 @@ Instructor: Fabio Votta
 
 28th June 2022 (Day 1)
 
-.fifty[Link to slides: [favstats.github.io/WarwickSpringCamp_QTA/slides/day2/](https://favstats.github.io/WarwickSpringCamp_QTA/slides/day1/)]
+.fifty[Link to slides: [favstats.github.io/WarwickSpringCamp_QTA/slides/day1/](https://favstats.github.io/WarwickSpringCamp_QTA/slides/day1/)]
 
 
 ---
