@@ -338,11 +338,11 @@ In practice, these approaches can often overlap!
 
 Four Principles of Automated Text Analysis (Grimmer & Stewart 2013)
 
-> (1) All quantitative models of language are wrong—but some are useful.
+> (1) All Quantitative Models of Language Are Wrong—But Some Are Useful
 
-> (2) Quantitative methods for text amplify resources and augment humans.
+> (2) Quantitative Methods Augment Humans, Not Replace Them.
  
-> (3) There is no globally best method for automated text analysis.
+> (3) There Is No Globally Best Method for Automated Text Analysis.
 
 > (4) Validate, Validate, Validate
 
