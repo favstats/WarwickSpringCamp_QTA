@@ -5,9 +5,9 @@ format: html
 editor: visual
 ---
 
-<!-- ```{r} -->
-<!-- rmarkdown:::convert_ipynb("QTA_Day1 (1).ipynb", "QTA_Day1.Rmd") -->
-<!-- ``` -->
+```{r}
+rmarkdown:::convert_ipynb("QTA_Day1.ipynb", "QTA_Day1.Rmd")
+```
 
 
 

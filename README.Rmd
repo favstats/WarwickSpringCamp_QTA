@@ -31,3 +31,13 @@ The workshop covers important basics (e.g., pre-processing, tokenization, and pa
 By the end of this workshop, participants will have a good understanding of the potentials and limitations of quantitative text analysis, as well as some experience working with the R software packages for conducting this type of analysis.
 
 
++ Day I
+
+    + [Slides](https://favstats.github.io/WarwickSpringCamp_QTA/slides/day1/#1)
+    + [Google Colab](tinyurl.com/wqtaday1)
+    
+You may prefer to use R in Rstudio, there is also an Rmarkdown version of the code [here](https://github.com/favstats/WarwickSpringCamp_QTA/raw/main/Rmd/QTA_Day1.Rmd).
+
++ Day II
+
+    + will be posted soon :)
