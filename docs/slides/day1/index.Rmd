@@ -366,7 +366,7 @@ Four Principles of Automated Text Analysis (Grimmer & Stewart 2013)
 ### Overview Day 1 (13:00 - 16:00)
 
 
-+ Introduction `r emo::ji("white_check_mark")`
++ Introduction .font30[(*You* are here)]
 
 + Manipulating strings in R 
 
