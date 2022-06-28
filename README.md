@@ -33,11 +33,12 @@ this type of analysis.
 -   Day I
 
     -   [Slides](https://favstats.github.io/WarwickSpringCamp_QTA/slides/day1/#1)
-    -   [Google Colab](tinyurl.com/wqtaday1)
+    -   [Google
+        Colab](https://colab.research.google.com/drive/1cwaDldUvXMrtT1DT93UhhcdOBqATKM-E?usp=sharing)
 
 You may prefer to use R in Rstudio, there is also an Rmarkdown version
 of the code
-[here](https://github.com/favstats/WarwickSpringCamp_QTA/raw/main/Rmd/QTA_Day1.Rmd).
+[here](https://github.com/favstats/WarwickSpringCamp_QTA/blob/main/Rmd/QTA_Day1.Rmd).
 
 -   Day II
 
