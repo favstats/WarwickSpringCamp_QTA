@@ -133,7 +133,7 @@ class: title-slide, center, middle
 
 ### .font120[.fancy[`r rmarkdown::metadata$subtitle`]]
 
-*Spring Camp University of Warwick*
+*Warwick Q-Step Centre Spring Camp 2022*
 
 Instructor: Fabio Votta
 
@@ -366,7 +366,7 @@ Four Principles of Automated Text Analysis (Grimmer & Stewart 2013)
 ### Overview Day 1 (13:00 - 16:00)
 
 
-+ Introduction .font30[(*You* are here)]
++ Introduction .font40[(*You* are here)]
 
 + Manipulating strings in R 
 
@@ -376,8 +376,6 @@ Four Principles of Automated Text Analysis (Grimmer & Stewart 2013)
 15   M I N U T E S   B R E A K:   *14:30*
 
 + term frequency–inverse document frequency (tf-idf)
-
-+ Stemming
 
 + Rule-based methods (i.e. dictionaries)
 
