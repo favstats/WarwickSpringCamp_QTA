@@ -5,6 +5,12 @@ format: html
 editor: visual
 ---
 
+<!-- ```{r} -->
+<!-- rmarkdown:::convert_ipynb("QTA_Day1 (1).ipynb", "QTA_Day1.Rmd") -->
+<!-- ``` -->
+
+
+
 # Topic modelling notebook
 
 This hands-on exercise focuses on: 1) estimating a topic model ; 2) interpreting and visualizing results.

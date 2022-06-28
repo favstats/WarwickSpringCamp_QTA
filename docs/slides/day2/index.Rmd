@@ -22,7 +22,12 @@ output:
 
 layout: true
 
+
+
 <style>
+
+ .tab { margin-left: 40px; }
+
 .onehundredtwenty {
   font-size: 120%;
    }
@@ -60,7 +65,7 @@ layout: true
 
 ```{r meta, echo=FALSE, warning=F, message=F}
 
-
+library(tidymodels)
 library(metathis)
 meta() %>%
   meta_general(
@@ -83,7 +88,7 @@ meta() %>%
 ```{r setup, include=FALSE}
 # dateWritten <- format(as.Date('2020-05-04'), format="%B %d %Y")
 workshop_day <- format(as.Date("2022-06-29"), format="%B %d %Y")
-pacman::p_load(tidyverse, fontawesome, tidyverse, knitr, xaringanthemer)
+pacman::p_load(xaringanthemer)
 
 options(
     htmltools.dir.version = FALSE,
@@ -574,9 +579,543 @@ stats %>%
 
 ---
 
+class: center, middle, inverse
+
+# Machine Learning
+
+<center>
+
+<img src="https://i.gifer.com/fxvV.gif">
+
+  
+</center>
+
+---
+
+## Machine Learning
+
+> Machine learning, broadly defined, are a range computational methods that can "learn" by discovering patterns in data.
+
+There are two (for us relevant) methods how machines can learn:
+
+1. *Unsupervised* machine learning (clustering)
+2. *Supervised* machine learning (classification)
+
+
+
+---
+
+## Machine Learning
+
+> Machine learning, broadly defined, are a range computational methods that can "learn" by discovering patterns in data.
+
+**Unsupervised machine learning (clustering)**
+
+In *unsupervised learning* we let an algorithm figure out quantities of interest, solely by supplying it with the data.
+
+Typically, this happens by identifiyng so-called *clusters* that are more similar to each other in some way, compared to other clusters.
+
+
+---
+
+## Machine Learning
+
+> Machine learning, broadly defined, are a range computational methods that can "learn" by discovering patterns in data.
+
+
+**Supervised machine learning (classification)**
+
+In *supervised learning* we provide a machine learning model with some data (*training data*) from which it can learn patterns.
+
+For example, we may have some annotated tweets that tell us whether they are positive or negative. We can leverage that data to let a machine learning model learn the patterns of text that are positive vs. negative.
+
+---
+
+## Machine Learning
+
+Most important thing to remember:
+
++ *Unsupervised* machine learning 
+
+<p class="tab">&#8594; learns patterns by itself</p>
+
+
+
++ *Supervised* machine learning (classification)
+
+
+
+<p class="tab">&#8594; learns patterns based on provided (human) annotations</p>
+
+
+
+
+---
+
+class: center, middle, inverse
+
+# Topic Models
+
+an .fancy[unsupervised machine learning] method
+
+---
+
+
 ## Topic Models
+
+.font80[
+> Topic models can be used to identify "topics" in (large corpora of) text. 
+
+
+You may have noticed that I put "topics" in quotation marks. That is because the output of a topic model is not what one would *intuitively* understand as topic.
+
+Here is an example output:
+]
+
+
+
+![](images/topics_output.png)
+
+---
+
+
+
+## Topic Models
+
+We are going to take a look at Latent Dirichlet Allocation (LDA) in particular (a common implementation of topic modelling)
+
+An LDA has two model assumptions:
+
++ every document can be represented as a distribution of topics - $\theta$
+
++ every topic can be represented as distribution of terms - $\beta$
+
+
+---
+
+## Document-term matrix
+
+Most topic models take data as a so-called "*document-term-matrix* (dtm). A dtm is a matrix (with rows and columns) that counts the number of times terms occur in specific documents.
+
+This is what it looks like:
+
+
+
+---
+
+## Topic Models
+
+We could estimate our topic models using all the words within the document but:
+
+1. Many words will not be good indicators of a topic
+2. It will take a long time
+
+So in the interest of time, we will **only keep lemmatized nouns** (as identified by POS tagging).
+
+A similar approach has been taken by Jacobi et al., 2016, and Lind et al., 2021.
+
+---
+
+```{r, eval = F}
+reddit_dtm <- sotu_ud %>%
+  filter(upos == "NOUN") %>% 
+  count(doc_id, word, sort = T) %>%
+  filter(n > 50) %>% 
+  cast_dtm(submission_id, word, n)
+```
+
+
+---
+
+```{r}
+# install.packages("quanteda.corpora")
+devtools::install_github("quanteda/quanteda.corpora")
+
+
+quanteda.corpora:: %>% 
+  tidy() %>% 
+  pull(text) %>% 
+  .[2] %>% 
+  str_split("____") %>% 
+  unlist() %>% 
+  .[2]
+```
+
+```{r}
+debate_transcripts <- readr::read_csv("https://raw.githubusercontent.com/favstats/WarwickSpringCamp_QTA/main/docs/slides/day1/data/debate_transcripts.csv") %>% 
+  filter(candidate == 1) %>% 
+  rename(doc_id = id) %>% 
+  mutate(text = str_replace_all(text, "Bill Clinton", "Clinton"))
+
+library(udpipe)
+
+debates_ud <- udpipe(debate_transcripts, "english", parallel.cores = 4)
+
+saveRDS(debates_ud, file = "data/debates_ud.rds")
+
+library(tidyverse)
+
+debates_ud_nouns <- debates_ud %>% 
+  filter(upos %in% c("NOUN", "PROPN"))   %>%
+  # filter(upos != "PUNCT") %>% 
+  mutate(lemma = str_to_lower(lemma)) %>% 
+  # anti_join(stop_words %>% rename(lemma = word)) %>% 
+  # left_join(yo %>% select(doc_id, speech_doc_id) %>% mutate(doc_id = as.character(doc_id))) %>% 
+  count(doc_id, lemma, sort = T) %>%
+  # rename(doc_id = speech_doc_id) %>% 
+  filter(n >= 5) %>% 
+  # filter(str_detect(lemma, "Bernie"))
+  # count(lemma, sort = T) %>%
+  filter(!(lemma %in% c("donald", "obama", "bush",
+                        "joe", "john", "hillary",
+                        "reagan", "george", "barack",
+                        "bernie", "sanders", "al",
+                        "romney", "kennedy", "mccain",
+                        "biden", "ronald", "mccain",
+                        "carter", "gore", "kerry",
+                        "bill", "elizabeth", "klobuchar",
+                        "bloomberg", "mike", "pence",
+                        "clinton", "laughter", "applause",
+                        "crosstalk", "inaudible")))
+  
+library(tidytext)
+debates_dtm <- debates_ud_nouns %>% 
+  cast_dtm(doc_id, lemma, n)
+
+debate_transcripts %>% 
+  count(date)
+  filter(str_detect(text, "\\["))
+```
+
+```{r, eval = F}
+require(topicmodels)
+
+# number of topics
+# K <- 20
+# set random number generator seed
+set.seed(9161)
+# compute the LDA model, inference via 1000 iterations of Gibbs sampling
+topicModel <- LDA(debates_dtm, k =  20)
+```
+```{r, eval = F}
+terms(topicModel, 10)
+```
+```{r}
+# have a look a some of the results (posterior distributions)
+tmResult <- posterior(topicModel)
+
+# for every document we have a probaility distribution of its contained topics
+theta <- tmResult$topics 
+# dim(theta)               # nDocs(DTM) distributions over K topics
+
+# tidy(topicModel)
+jj <- terms(topicModel, 5)
+
+topic_names <- jj %>% 
+  as.data.frame() %>% 
+  map(~paste0(.x, " ", collapse = "")) %>% 
+  unlist() %>% 
+  str_trim()
+
+ww <- theta %>% 
+  as.data.frame() %>%
+  set_names(topic_names) %>% 
+  rownames_to_column("doc_id") %>% 
+  left_join(debate_transcripts %>% mutate(doc_id = as.character(doc_id))) %>%
+  # left_join(yo %>% mutate(doc_id = as.character(speech_doc_id))) %>% 
+  mutate(decade = lubridate::floor_date(date, "4 years")) 
+
+library(Polychrome)
+
+data(alphabet)
+
+
+ww %>% 
+  group_by(decade) %>% 
+  summarize_at(vars(2:21), mean) %>% 
+  gather(key, values, -decade) %>% 
+  ggplot(aes(x=decade, y=values, fill=key)) + 
+  geom_bar(stat = "identity") + ylab("proportion") + 
+  scale_fill_manual(values = paste0(alphabet[1:20], "FF"), name = "decade") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+```
+
+
+```{r, eval = F}
+yo <- read_csv2("https://raw.githubusercontent.com/tm4ss/tm4ss.github.io/master/data/sotu_paragraphs.csv")
+
+yo2 <- read_csv2("https://raw.githubusercontent.com/tm4ss/tm4ss.github.io/master/data/sotu.csv")
+
+yo %>% count(date)
+
+yo %>% 
+  sample_n(10) %>% 
+  pull(text)
+```
+```{r, eval = F}
+library(udpipe)
+
+# sotu_ud <- udpipe(yo, "english", parallel.cores = 4)
+
+# saveRDS(sotu_ud, file = "data/sotu_ud.rds")
+
+sotu_ud <- readRDS("data/sotu_ud.rds")
+
+library(tidytext)
+
+library(quanteda)
+
+dfm <- dfm_trim(cast_dfm(sotu_ud_nouns, doc_id, lemma, n), 
+                min_docfreq = 0.01, 
+                max_docfreq = 0.99, 
+                docfreq_type = "prop", 
+                verbose = TRUE) 
+
+sotu_ud_nouns <- sotu_ud %>% 
+  # filter(upos %in% c("NOUN", "PROPN"))   %>%
+  # filter(upos != "PUNCT") %>% 
+  mutate(lemma = str_to_lower(lemma)) %>% 
+  # anti_join(stop_words %>% rename(lemma = word)) %>% 
+  # left_join(yo %>% select(doc_id, speech_doc_id) %>% mutate(doc_id = as.character(doc_id))) %>% 
+  count(doc_id, lemma, sort = T) #%>%
+  # rename(doc_id = speech_doc_id) %>% 
+  filter(n >= 5)
+
+library(tidytext)
+  
+
+sotu_dtm <- sotu_ud_nouns %>% 
+  cast_dtm(doc_id, lemma, n)
+
+sotu_ud %>% count(upos)
+```
+
+
+```{r, eval = F}
+require(topicmodels)
+
+# number of topics
+# K <- 20
+# set random number generator seed
+set.seed(9161)
+# compute the LDA model, inference via 1000 iterations of Gibbs sampling
+topicModel <- LDA(convert(dfm, to = "topicmodels"), k =  20)
+```
+```{r, eval = F}
+terms(topicModel, 10)
+```
+```{r, eval = F}
+# have a look a some of the results (posterior distributions)
+tmResult <- posterior(topicModel)
+
+# for every document we have a probaility distribution of its contained topics
+theta <- tmResult$topics 
+# dim(theta)               # nDocs(DTM) distributions over K topics
+
+# tidy(topicModel)
+jj <- terms(topicModel, 5)
+
+topic_names <- jj %>% 
+  as.data.frame() %>% 
+  map(~paste0(.x, " ", collapse = "")) %>% 
+  unlist() %>% 
+  str_trim()
+
+ww <- theta %>% 
+  as.data.frame() %>%
+  set_names(topic_names) %>% 
+  rownames_to_column("doc_id") %>% 
+  left_join(yo %>% mutate(doc_id = as.character(doc_id))) %>%
+  # left_join(yo %>% mutate(doc_id = as.character(speech_doc_id))) %>% 
+  mutate(decade = lubridate::floor_date(date, "10 years")) 
+
+library(Polychrome)
+
+data(alphabet)
+
+
+ww %>% 
+  group_by(decade) %>% 
+  summarize_at(vars(2:21), mean) %>% 
+  gather(key, values, -decade) %>% 
+  ggplot(aes(x=decade, y=values, fill=key)) + 
+  geom_bar(stat = "identity") + ylab("proportion") + 
+  scale_fill_manual(values = paste0(alphabet[1:20], "FF"), name = "decade") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+
+  
+```
+
+
+
 
 ---
 
 ## Supervised machine learning
+
+```{r}
+library(tidymodels)
+
+```
+
+
+
+```{r}
+
+toxicity_dat <- readr::read_csv("https://raw.githubusercontent.com/surge-ai/toxicity/main/toxicity_en.csv")
+
+```
+
+
+
+```{r}
+library(tidymodels)
+
+
+tox_split <- initial_split(toxicity_dat %>% mutate(is_toxic = factor(is_toxic, levels= c("Toxic", "Not Toxic"))), strata = is_toxic)
+
+tox_train <- training(tox_split)
+tox_test <- testing(tox_split)
+```
+
+
+```{r}
+tox_rec <-
+  recipe(is_toxic ~ text, data = tox_train)
+```
+
+
+```{r}
+library(textrecipes)
+
+tox_rec <- tox_rec %>%
+  step_tokenize(text) %>%
+  step_tokenfilter(text, max_tokens = 1e3) %>%
+  step_tfidf(text)
+```
+
+```{r}
+tox_wf <- workflow() %>%
+  add_recipe(tox_rec)
+
+
+tox_wf
+```
+
+```{r}
+library(discrim)
+nb_spec <- naive_Bayes() %>%
+  set_mode("classification") %>%
+  set_engine("naivebayes")
+
+nb_spec
+```
+
+
+
+
+```{r}
+nb_fit <- tox_wf %>%
+  add_model(nb_spec) %>%
+  fit(data = tox_train)
+```
+
+```{r}
+set.seed(234)
+tox_folds <- vfold_cv(tox_train)
+
+tox_folds
+```
+
+
+
+```{r}
+nb_wf <- workflow() %>%
+  add_recipe(tox_rec) %>%
+  add_model(nb_spec)
+
+nb_wf
+```
+
+```{r}
+nb_rs <- fit_resamples(
+  nb_wf,
+  tox_folds,
+  control = control_resamples(save_pred = TRUE)
+)
+```
+
+
+```{r}
+nb_rs_metrics <- collect_metrics(nb_rs)
+nb_rs_predictions <- collect_predictions(nb_rs)
+```
+
+
+```{r}
+nb_rs_metrics
+
+```
+
+```{r}
+nb_rs_predictions %>%
+  group_by(id) %>%
+  roc_curve(truth = is_toxic, .pred_Toxic) %>%
+  autoplot() +
+  labs(
+    color = NULL,
+    title = "ROC curve for US Consumer Finance Complaints",
+    subtitle = "Each resample fold is shown in a different color"
+  )
+```
+```{r}
+nb_rs_predictions %>%
+  recall(is_toxic, .pred_class)
+```
+
+```{r}
+nb_rs_predictions %>%
+  group_by(id) %>%
+  recall(is_toxic, .pred_class)
+```
+
+
+
+
+
+```{r}
+conf_mat_resampled(nb_rs, tidy = FALSE) %>%
+  autoplot(type = "heatmap")
+```
+
+
+
+```{r}
+null_classification <- null_model() %>%
+  set_engine("parsnip") %>%
+  set_mode("classification")
+
+null_rs <- workflow() %>%
+  add_recipe(tox_rec) %>%
+  add_model(null_classification) %>%
+  fit_resamples(
+    tox_folds
+  )
+```
+
+
+```{r}
+null_rs %>%
+  collect_metrics()
+```
+
+
+
+
+
+
+
+
+
 
