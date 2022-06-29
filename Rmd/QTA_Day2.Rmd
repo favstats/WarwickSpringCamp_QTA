@@ -1,0 +1,491 @@
+---
+title: An R Markdown document converted from "QTA_Day2.ipynb"
+output: html_document
+---
+
+# Welcome
+
+![](https://github.com/favstats/WarwickSpringCamp_QTA/blob/main/slides/day1/images/titleslide.png?raw=true)
+
+**Welcome to the Quantitative Text Analysis in R Workshop!**
+
+This is Part II. For a link to Part I click [here](https://colab.research.google.com/drive/1cwaDldUvXMrtT1DT93UhhcdOBqATKM-E?usp=sharing).
+
+Link to Slides (Day 2): https://favstats.github.io/WarwickSpringCamp_QTA/slides/day2
+
+**Workshop description:**
+
+We live in a digital society, and enormous amounts of textual data are generated every day. Text analysis for social science research is not new, but with recent computational advances, we can now process text much more efficiently and in greater quantity. 
+
+Quantitative text analysis is a set of tools that help make sense of textual data by systematically extracting information from texts. This workshop will teach you the fundamentals of quantitative text analysis and provide you with hands-on experience with cutting-edge methods implemented in R. 
+
+The workshop covers important basics (e.g., pre-processing, tokenization, and part-of-speech tagging) as well as three types of analytic techniques: rule-based, unsupervised, and supervised methods (dictionary methods, topic models and machine learning, respectively). 
+
+By the end of this workshop, participants will have a good understanding of the potentials and limitations of quantitative text analysis, as well as some experience working with the R software packages for conducting this type of analysis.
+
+
+
+
+
+```{r}
+# To this if you want to install all the needed packages
+# NOTE: this may take 2 minutes or more 
+if (!require("pacman")) install.packages("pacman")
+pacman::p_load(tidyverse, udpipe)
+```
+
+# Part-of-speech tagging
+
+![](https://i2.wp.com/www.bnosac.be/images/bnosac/blog/depenceny-parsing-example3.png?w=584)
+
+Part-of-speech tagging is the process of assigning a syntactic tag to each word in a sentence. 
+
+For example, in the sentence "The dog chased the cat," "dog" and "cat" would be assigned the tag "noun" and "chased" would be assigned the tag "verb." 
+
+The most common parts of speech are nouns, verbs, adjectives, adverbs, and pronouns.
+
+## NLP with `udpipe`
+
+
+
+
+
+<p style="font-size:1px"></p> | <p style="font-size:1px"></p>
+-------------------|------------------
+ <img src="https://bnosac.github.io/udpipe/img/logo-udpipe-r.png" width = "150"> | <p style="font-size:10px">"`udpipe` provides quick and simple annnotations giving rich output: tokenization,<br>part-of-speech-tagging, lemmatization and dependency parsing<br>with multi-language support. From raw text to parsed output for<br>more than 50 languages."</p>
+
+
+```{r}
+if(!require("udpipe")){
+    install.packages("udpipe")
+}
+library(udpipe)
+```
+
+*The* following table contains the so-called **universal part-of-speech tags** (upos). This was taken from [this website](https://universaldependencies.org/u/pos/) which has more info on upos tags. 
+
+| Universal POS tags | Meaning                   | Definition                                                                                                                                                                                                                      | Example                                                          |
+|--------------------|---------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------|
+| ADJ                | adjective                 | Adjectives are words that typically modify nouns and specify their properties or attributes:                                                                                                                                    | The car is **green**.                                            |
+| ADP                | adposition                | In many languages, adpositions can take the form of fixed multiword expressions,                                                                                                                                                | **in** spite **of**, because **of**, thanks **to**               |
+| ADV                | adverb                    | Adverbs are words that typically modify verbs for such categories as time, place, direction or manner.                                                                                                                          | He ate **slowly**.                                               |
+| AUX                | auxiliary                 | An auxiliary is a function word that accompanies the lexical verb of a verb phrase and expresses<br>grammatical distinctions not carried by the lexical verb, such as person, number, tense, mood, aspect,<br>voice or evidentiality. | Tense auxiliaries: **has** (done), **is** (doing), **will** (do) |
+| CCONJ              | coordinating conjunction  | A coordinating conjunction is a word that links words or larger constituents without syntactically<br>subordinating one to the other and expresses a semantic relationship between them.                                           | **and**, **or**, **but**                                         |
+| DET                | determiner                | Determiners are words that modify nouns or noun phrases and express the reference of the noun phrase in context.                                                                                                                | **the**, **this**, **that**, **which**                           |
+| INTJ               | interjection              | An interjection is a word that is used most often as an exclamation or part of an exclamation.                                                                                                                                  | **psst**, **ouch**                                               |
+| NOUN               | noun                      | Nouns are a part of speech typically denoting a person, place, thing, animal or idea.                                                                                                                                           | The **cat** is in the **hat**.                                   |
+| NUM                | numeral                   | A numeral is a word, functioning most typically as a determiner, adjective or pronoun, that expresses<br>a number and a relation to the number, such as quantity, sequence, frequency or fraction.                                 | **0**, **1**, **2**, **one**, **two**, **three**                 |
+| PART               | particle                  | Particles are function words that must be associated with another word or phrase to impart meaning<br>and that do not satisfy definitions of other universal parts of speech                                                       | Possessive marker: [en] ‘s                                       |
+| PRON               | pronoun                   | Pronouns are words that substitute for nouns or noun phrases, whose meaning is recoverable<br>from the linguistic or extralinguistic context.                                                                                      | personal pronouns: I, you, he, she, it, we, they                 |
+| PROPN              | proper noun               | A proper noun is a noun (or nominal content word) that is the name (or part of the name)<br>of a specific individual, place, or object.                                                                                            | **London**, **NATO**, **Mary Sue**                               |
+| PUNCT              | punctuation               | Punctuation marks are non-alphabetical characters and character groups used in many languages<br>to delimit linguistic units in printed text.                                                                                      | **,**, **.**, **(**, **:**                                       |
+| SCONJ              | subordinating conjunction | A subordinating conjunction is a conjunction that links constructions by making one of them a constituent of the other.                                                                                                         | **if**, **while**                                                |
+| SYM                | symbol                    | A symbol is a word-like entity that differs from ordinary words by form, function, or both.                                                                                                                                     | **$**, **%**, **§**, **+**                                       |
+| VERB               | verb                      | A verb is a member of the syntactic class of words that typically signal events and actions                                                                                                                                     | He **runs**.                                                     |
+| x                  | other                     | The tag X is used for words that for some reason cannot be assigned a real part-of-speech category.                                                                                                                             | And then he just **xfgh pdl jklw**.                              |
+
+### One function to rule them all: `udpipe()`
+
+`udpipe()` is the main work horse of the `udpipe` package. With it you can perform
+
++ tokenization
++ lemmatization
++ part-of-speech tagging
++ dependency parsing
+
+**all in one!**
+
+>  On dependency parsing:  dependency parsing is a type of syntactic parsing that identifies the dependencies between words in a sentence. Dependency parsers typically use a set of rules to find these dependencies, and these rules can vary depending on the language being parsed.
+
+
+
+
+#### Trump tweet example
+
+Let's apply `udpipe()` on the Trump tweet from yesterday and see what it can do for us!
+
+```{r}
+## read in Trump tweets
+trump_tweets <- readr::read_csv("https://raw.githubusercontent.com/favstats/WarwickSpringCamp_QTA/main/docs/slides/day1/data/trump_tweets.csv")
+```
+
+```{r}
+## sample 1 tweet
+trump_tweet <- sample_n(trump_tweets, 1)
+
+## nuclear tweet
+trump_tweet <- trump_tweets[trump_tweets$id == 1165918301932916736,]
+
+trump_tweet$text
+```
+
+`udpipe()` expects a data.frame with two variables:
+
+1. `doc_id`, a unique identifier for your document
+2. `text`, the text you are trying to parse
+
+```{r}
+trump_tweet_ud <- trump_tweet %>%
+  mutate(doc_id = id)
+
+pos_tags_trump <- udpipe(trump_tweet_ud, "english")
+
+pos_tags_trump %>%
+  select(token, upos, lemma)
+```
+
+We get a nice tidy data frame with one token per row!
+
+We can visualize all the output from `udpipe()` using the following function (taken from [here](https://www.r-bloggers.com/2019/07/dependency-parsing-with-udpipe/#:~:text=Dependency%20parsing%20is%20an%20NLP,you%20further%20details%20about%20it.)).
+
+Note: the following code will take some time on Google Colab. 
+
+```{r}
+## THIS WILL TAKE 7 minutes to install! ##
+## ONLY RUN THIS IF YOU REALLY WANNA CREATE THE GRAPH YOURSELF
+
+# if (!require("pacman")) install.packages("pacman")
+# pacman::p_load(igraph, ggraph)
+
+# library(igraph)
+# library(ggraph)
+# library(ggplot2)
+# plot_annotation <- function(x, size = 3){
+#   stopifnot(is.data.frame(x) & all(c("sentence_id", "token_id", "head_token_id", "dep_rel",
+#                                      "token_id", "token", "lemma", "upos", "xpos", "feats") %in% colnames(x)))
+#   x <- x[!is.na(x$head_token_id), ]
+#   x <- x[x$sentence_id %in% min(x$sentence_id), ]
+#   edges <- x[x$head_token_id != 0, c("token_id", "head_token_id", "dep_rel")]
+#   edges$label <- edges$dep_rel
+#   g <- graph_from_data_frame(edges,
+#                              vertices = x[, c("token_id", "token", "lemma", "upos", "xpos", "feats")],
+#                              directed = TRUE)
+#   ggraph(g, layout = "linear") +
+#     geom_edge_arc(ggplot2::aes(label = dep_rel, vjust = -0.20),
+#                   arrow = grid::arrow(length = unit(4, 'mm'), ends = "last", type = "closed"),
+#                   end_cap = ggraph::label_rect("wordswordswords"),
+#                   label_colour = "red", check_overlap = TRUE, label_size = size) +
+#     geom_node_label(ggplot2::aes(label = token), col = "darkgreen", size = size, fontface = "bold") +
+#     geom_node_text(ggplot2::aes(label = upos), nudge_y = -0.35, size = size) +
+#     theme_graph(base_family = "Arial Narrow") +
+#     labs(title = "udpipe output", subtitle = "tokenisation, parts of speech tagging & dependency relations")
+# }
+
+# options(repr.plot.width=15, repr.plot.height=8)
+# plot_annotation(pos_tags_trump)
+```
+
+![](https://pbs.twimg.com/media/FWAb-SFX0AAzW4n?format=jpg&name=large)
+
+### Keyword extraction
+
+Now we have tags for our text. Brilliant. What can we do with this? 
+
+Similar as before, we are interested in what's going on in our text. 
+
+Part-of-speech tagging can enable us to find more meaningful keywords that tell us something about the texts we are investigating.
+
+`udpipe()` offers various methods for keyword extractions:
+
+
+1.   Find keywords by doing **parts of speech tagging in order to identify nouns**
+2. Find keywords based on **collocations and co-occurrences**
+3. Find keywords based on algorithms
+  * **RAKE** (rapid automatic keyword extraction)
+4. Find keywords by looking for **phrases** (e.g. noun phrases)
+5. Find keywords based on results of **dependency parsing** (getting the subject of the text)
+
+
+
+#### Most frequent nouns/verbs etc.
+
+Let's now run part-of-speech tagging to find the most common nouns and verbs that Trump uses.
+
+
+```{r}
+## This takes a couple of minutes so we load in next chunk!
+# 
+# trump_tweets_uds <- trump_tweets %>%
+#   filter(date_year %in% 2016:2021) %>%
+#   mutate(doc_id = id)  %>%
+#   mutate(doc_id = as.character(doc_id))
+# 
+# pos_tags_trump_all <- udpipe(trump_tweets_uds, "english")  %>%
+#   left_join(trump_tweet_ud)
+```
+
+```{r}
+pos_tags_trump_all <- readRDS(url("https://raw.githubusercontent.com/favstats/WarwickSpringCamp_QTA/main/docs/slides/day2/data/pos_tags_trump_all.rds"))
+```
+
+```{r}
+pos_tags_trump_all %>%
+  filter(upos == "NOUN") %>%
+  count(token, sort = T) %>%
+  head(10)
+```
+
+```{r}
+pos_tags_trump_all %>%
+  filter(upos == "VERB") %>%
+  count(token, sort = T) %>%
+  head(10)
+```
+
+#### RAKE (rapid automatic keyword extraction)
+
+RAKE is a basic algorithm which tries to identify keywords in text. Keywords are defined as a sequence of words following one another. 
+
+Frequency of occurence plays a role as well, as well as frequency of co-occurences with other words. Word combinatiosn with higher values are considered to be more frequent and unique.
+
+If you want to know more about RAKE [see here](https://www.analyticsvidhya.com/blog/2021/10/rapid-keyword-extraction-rake-algorithm-in-natural-language-processing/).
+
+
+
+
+```{r}
+library(ggplot2)
+
+## Using RAKE
+stats <- keywords_rake(
+  x = pos_tags_trump_all %>% mutate(lemma = stringr::str_to_lower(lemma)), 
+  term = "lemma", group = "doc_id", 
+  relevant = pos_tags_trump_all$upos %in% c("NOUN", "VERB", "ADJ")
+  )
+                       
+                       
+#stats
+stats %>% 
+  filter(freq > 5) %>%
+  arrange(desc(rake)) %>%
+  mutate(keyword = forcats::fct_reorder(keyword, rake)) %>%
+  slice(1:20) %>%
+  ggplot(aes(keyword, rake)) +
+  geom_col() +
+  coord_flip() 
+```
+
+#### (Simple) Noun Phrases
+
+Next option is to extract (simple) noun phrases. What are they?
+
+Noun phrases are groups of words that function like nouns.
+
+Some examples:
+
+**All the children** were eating.
+
+She bought herself **a beautiful dark dress**.
+
+Dad baked **a tasty chocolate cake**.
+
+How does this work? Parts of Speech tags are recoded to one of the following one-letters: 
+
+> A: adjective, C: coordinating conjuction, D: determiner, M: modifier of verb, N: noun or proper noun, P: pre/postposition. 
+
+Next you can define a regular expression to indicate a sequence of parts of speech tags which you want to extract from the text.
+
+As regex we can express a (simple) noun phrase as this:
+
+> `(A|N)*N(P+D*(A|N)*N)*`
+
+For more info on noun phrases [see here](https://universaldependencies.org/workgroups/newdoc/simple_noun_phrases.html).
+
+```{r}
+## Simple noun phrases (a adjective+noun, pre/postposition, optional determiner and another adjective+noun)
+pos_tags_trump_all$phrase_tag <- as_phrasemachine(pos_tags_trump_all$upos, type = "upos")
+
+keyw_nounphrases <- keywords_phrases(pos_tags_trump_all$phrase_tag, term = pos_tags_trump_all$token, 
+                                     pattern = "(A|N)*N(P+D*(A|N)*N)*", is_regex = TRUE, 
+                                     detailed = T)
+
+```
+
+```{r}
+keyw_nounphrases %>%
+  filter(ngram >= 3) %>%
+  count(keyword, sort = T) %>%
+  head(20)
+```
+
+#### Dependency Parsing
+
+For this exercise we are going to take the words which have as dependency relation "*nsubj*" indicating the nominal subject and we are adding to that the adjective which is changing the nominal subject.
+
+```{r}
+stats <- merge(pos_tags_trump_all, pos_tags_trump_all, 
+           by.x = c("doc_id", "paragraph_id", "sentence_id", "head_token_id"),
+           by.y = c("doc_id", "paragraph_id", "sentence_id", "token_id"),
+           all.x = TRUE, all.y = FALSE, 
+           suffixes = c("", "_parent"), sort = FALSE) 
+
+stats <- subset(stats, dep_rel %in% c("nsubj") & upos %in% c("NOUN", "PROPN") & upos_parent %in% c("ADJ"))
+
+stats$term <- paste(stats$lemma_parent, stats$lemma, sep = " ")
+
+stats %>%
+  count(term, sort = T) %>%
+  head(20)
+```
+
+
+
+# Project
+
+
+
+## Debates dataset
+
+For the final task today you may use the `debates` dataset. It includes transcripts of US presidential and primary debates until back to 1960s!
+
+<p style="font-size:1px"></p> | <p style="font-size:1px"></p>
+-------------------|------------------
+ <img src="https://github.com/jamesmartherus/debates/raw/master/man/figures/logo.png" width = "150"> | <p style="font-size:10px">"`debates` provides easy access to debate transcripts from<br>Presidential, Vice Presidential, and primary candidate debates.<br>The current version includes Presidential and Vice-Presidential<br>debate transcripts starting in 1960, and for most debates from<br>the 2012, 2016, and 2020 primary elections."</p>
+
+
+1.   Pick a timeperiod, speaker and debates you are interested in
+  + depending on your skill level you may choose many different elections or just a single speaker in a single debate
+2.   Extract tokens from the data and look at the most common words. What do you see?
+  + Choose between removing stopwords, and or calculating tf-idf scores to improve results!
+3.   Run a sentiment analysis
+  + Check out the most positive, negative speakers and/or texts
+  + Come up with a list of keywords and check whether the sentiment is positive or negative
+
+
+```{r}
+# library(devtools)
+# install_github("jamesmartherus/debates")
+# library(debates)
+# debate_transcripts
+```
+
+We could install the package. For easier access, you can load the dataset directly from the workshop repository like this:
+
+```{r}
+debate_transcripts <- readr::read_csv("https://raw.githubusercontent.com/favstats/WarwickSpringCamp_QTA/main/docs/slides/day1/data/debate_transcripts.csv")
+```
+
+```{r}
+debate_transcripts %>%
+  head(5)
+```
+
+```{r}
+
+```
+
+## Reddit data: Johnny Depp vs. Amber Heard Trial
+
+If you are tired of US politics and want to analyze some data on an equally contentious topic (if not more?), here is the dataset for you!
+
+Recently, I scraped all the submissions and comments of `r/JusticeForJohnnyDepp` and `r/DeppDelusion` (an pro-Heard/anti-Johnny Depp subreddit).
+
+In total: 607231 submissions and text.
+
+Some things you should try:
+
+1.   Extract tokens from the data and look at the most common words. What do you see?
+  + Choose between removing stopwords, and or calculating tf-idf scores to improve results!
+2.   Run a sentiment analysis
+  + Check out the most positive, negative comments
+  + Come up with a list of keywords (Amber Heard, Johnny Depp) and check whether the sentiment is positive or negative
+
+Load in the data like this:
+
+```{r}
+trial_data <- readRDS(url("https://raw.githubusercontent.com/favstats/WarwickSpringCamp_QTA/main/docs/slides/day2/data/deppvsheard.rds"))  %>%
+  ## adding a year variable ;)
+  mutate(year = lubridate::year(created_at))
+```
+
+```{r}
+trial_data %>%
+  head(5) 
+```
+
+## The Guardian News Articles
+
+This dataset is taken from the `quanteda.corpora` package: 
+
+> 6,000 Guardian newspaper articles in politics, economy, society and international sections from 2012 to 2016.
+
+Some things you should try:
+
+1.   Extract tokens from the data and look at the most common words. What do you see?
+  + Choose between removing stopwords, and or calculating tf-idf scores to improve results!
+2.   Run a sentiment analysis
+  + Check out the most positive, negative articles
+  + Come up with a list of keywords (economy, politics, immigration) and check whether the sentiment is positive or negative
+
+```{r}
+guardian_data <- readRDS(url("https://raw.githubusercontent.com/favstats/WarwickSpringCamp_QTA/main/docs/slides/day1/data/data_corpus_guardian.rds"))  
+```
+
+```{r}
+guardian_data %>%
+  head(2)
+```
+
+## UK Manifestos 1945 - 2006
+
+This dataset is taken from the `quanteda.corpora` package: 
+
+> A corpus containing 105 UK Manifestos from 1945–2005, with party and year attributes.
+
+Some things you should try:
+
+1.   Extract tokens from the data and look at the most common words. What do you see?
+  + Choose between removing stopwords, and or calculating tf-idf scores to improve results!
+2.   Run a sentiment analysis
+  + Check out the most positive, negative articles
+  + Come up with a list of keywords (economy, politics, immigration) and check whether the sentiment is positive or negative
+
+```{r}
+guardian_data <- readRDS(url("https://raw.githubusercontent.com/favstats/WarwickSpringCamp_QTA/main/docs/slides/day1/data/data_corpus_ukmanifestos.rds"))  
+```
+
+## Here your code may start:
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+# Resources for more learning
+
+Many of these sources I used for inspiration for this workshop
+
+**General resources for text-as-data**
+
+* Michael Clark [Text Analysis in R](https://m-clark.github.io/text-analysis-with-R/intro.html)
+* Julia Silge and David Robinson [Text Mining with R](https://www.tidytextmining.com/)
+* Various Authors [SICCS Learning Materials](https://sicss.io/curriculum)
+* Dr. Will Lowe [Text as Data: Quantitative Text Analysis with R](https://socialdatascience.network/courses/textasdata.html)
+* Kasper Welbers [Text analysis in R](https://www.youtube.com/watch?v=O6CGXnxPHok&list=PL-i7GM-A1wBZYRYTpem7hNVHK3hSV_1It)
+* Andreas Niekler, Gregor Wiedemann
+ [Text mining in R for the social sciences and digital humanities
+](https://tm4ss.github.io/docs/index.html)
+* Kasper Welbers et al. [Text Analysis in R](https://kenbenoit.net/pdfs/text_analysis_in_R.pdf)
++  Valerie Hase - [Text as Data Methods in R](https://bookdown.org/valerie_hase/TextasData_HS2021/)
+
+**Supervised machine learning**
+
+* Emil Hvitfeldt and Julia Silge [Supervised Machine Learning for Text Analysis in R](https://smltar.com/)
+
+**Topic Models**
+
+* Julia Silge [Training, evaluating, and interpreting topic models](https://juliasilge.com/blog/evaluating-stm/)
+* Martin Schweinberger
+ [Topic Modeling with R](https://ladal.edu.au/topicmodels.html)
+

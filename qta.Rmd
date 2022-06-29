@@ -6,7 +6,7 @@ editor: visual
 ---
 
 ```{r}
-rmarkdown:::convert_ipynb("QTA_Day1.ipynb", "QTA_Day1.Rmd")
+rmarkdown:::convert_ipynb("QTA_Day2.ipynb", "Rmd/QTA_Day2.Rmd")
 ```
 
 

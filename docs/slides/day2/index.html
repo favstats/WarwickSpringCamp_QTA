@@ -835,29 +835,48 @@ This is what it looks like:
 
 ---
 
-## Debates
+.leftcol75[
 
-&lt;p style="font-size:1px"&gt;&lt;/p&gt; | &lt;p style="font-size:1px"&gt;&lt;/p&gt;
--------------------|------------------
- &lt;img src="https://github.com/jamesmartherus/debates/raw/master/man/figures/logo.png" width = "150"&gt; | &lt;p style="font-size:10px"&gt;"`debates` provides easy access to debate transcripts from Presidential, Vice Presidential, and primary candidate debates. The current version includes Presidential and Vice-Presidential debate transcripts starting in 1960, and for most debates from the 2012, 2016, and 2020 primary elections."&lt;/p&gt;
+## `debates` dataset
 
-Let's figure out topics in debates!
+.font80[
+`debates` provides easy access to debate transcripts from Presidential, Vice Presidential, and primary candidate debates. The current version includes Presidential and Vice-Presidential debate transcripts starting in 1960, and for most debates from the 2012, 2016, and 2020 primary elections.
+]
+
+]
+
+.rightcol25[
+
+
+&lt;img src="https://github.com/jamesmartherus/debates/raw/master/man/figures/logo.png" width="100" height="120" style="display: block; margin: auto 0 auto auto;" /&gt;
+
+]
+
+&lt;br&gt;
+
+.font70[
+We will estimate topic models on the `debates` dateset. 
+
+We could estimate our topic models using all the words within the documents but:
+
+1. Many words will not be good indicators of a topic
+2. It will take a long time
+
+So for efficiency, we will **only keep lemmatized nouns** (as identified by POS tagging).
+
+A similar approach has been taken by Jacobi et al., 2016, and Lind et al., 2021.
+
+*continue in script topic_modelling.Rmd*
+
+]
+
 
 
 ---
 
 ## Topic Models
 
-We could estimate our topic models using all the words within the document but:
 
-1. Many words will not be good indicators of a topic
-2. It will take a long time
-
-So in the interest of time, we will **only keep lemmatized nouns** (as identified by POS tagging).
-
-A similar approach has been taken by Jacobi et al., 2016, and Lind et al., 2021.
-
-*continue in script topic_modelling.Rmd*
 
 ---
 
@@ -875,22 +894,52 @@ class: center, middle, inverse
 
 In comparison to unsupervised machine learning, supervised learning requires labels often provided by the researchers.
 
-The labelled dataset is a collection of data that has been labelled with the desired outcome. The model is then able to use the labelled dataset to learn how to map the input data to the correct output. 
+The labelled dataset is a collection of data that has been labelled with the desired outcome. 
 
- 
+The model is then able to use the labelled dataset to learn how to map the input data to the correct output. 
+
 
 ---
 
+
 ## Supervised Machine Learning
+
+Similarities to typical statistical modelling
+
++ You can also use linear/logistic regression for machine learning
+
+However: we are more interested in prediction, not explaining
+
+Models may have 1000s of independent variables
+
+We are not interested in the effects, but rather the outcome
+
+---
+
+
+
+## Supervised text classification
 
 Supervised machine learning is a powerful tool for text classification. It can be used to automatically categorize texts into different classes. 
 
 For example, it can be used to classifier emails into spam and non-spam, or articles into different topics. 
 
-Supervised machine learning is also used for sentiment analysis, which is used to automatically detect the sentiment of a text.
+Another typical use-case for supervised ML is sentiment analysis.
+
+
+---
 
 
 
+## Main drivers of model performance
+
+1. Task difficulty
+
+2. Amount of training data
+
+3. Choice of features (n-grams, lemmata, etc.)
+
+4. Tuning of hyperparameters
 
 ---
 
@@ -906,7 +955,28 @@ It's important to have both training and test data because we want to make sure 
 
 That is, we want to make sure that our model can perform well on data that it hasn't seen before. 
 
-If we only had training data, we would have no way of knowing how our model would perform on new, unseen data. This could lead to **overfitting**, where our model performs well on training data but poorly on test data. 
+
+
+---
+
+### Prevent overfitting
+
+![](https://docs.aws.amazon.com/machine-learning/latest/dg/images/mlconcepts_image5.png)
+.font70[
++ Sufficiently complex model can "predict" all training data perfectly
+
++ However: our model would perform poorly on new, unseen data. This is called **overfitting**. 
+
++ Process:
+
+1. Split data into train + test
+
+2. Train model on training data
+
+3. Test model on unseen test data
+]
+
+
 
 
 
@@ -935,32 +1005,55 @@ What are the drawbacks of cross-validation?
 
 ---
 
-## Hyperparameters in Supervised Machine Learning
+## Choosing model and hyperparameters
 
 .font70[
 
+Many different model types exist
+
++ Linear/logistic Regression, naive bayes, neural networks, etc.
+
+They all come with different hyperparemeters
+
++ Learning rate, regularization, neural network structure
+
 *What are hyperparameters?*
 
-Hyperparameters are parameters that define the overall structure of a machine learning model. They are used to control the learning process of the model.
+Hyperparameters are parameters, *settings*, that define the overall structure and behaviour of a machine learning model. 
 
 They can significantly impact the performance of a machine learning model.
 
-*How can hyperparameters be tuned?*
+]
 
-Hyperparameters can be tuned using a variety of methods, including grid search, random search, and manual search.
+---
+
+
+## Hyperparameters in Supervised Machine Learning
+
+
+.font80[
 
 *What are the benefits of tuning hyperparameters?*
 
 Tuning hyperparameters can improve the performance of a machine learning model and make it more robust.
 
-*What are the risks of tuning hyperparameters?*
+*What are the downsides of tuning hyperparameters?*
 
 Tuning hyperparameters can be time-consuming and may not always lead to improved performance. 
+
+*How can hyperparameters be tuned?*
+
+Hyperparameters can be tuned using a variety of methods, including grid search, random search, and manual search.
+
 
 ]
 
 
+
+
 *continue in script smltar.Rmd*
+
+
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
