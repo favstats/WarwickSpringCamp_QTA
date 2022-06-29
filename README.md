@@ -42,4 +42,10 @@ of the code
 
 -   Day II
 
-    -   will be posted soon :)
+    -   [Slides](https://favstats.github.io/WarwickSpringCamp_QTA/slides/day2/#1)
+    -   [Google
+        Colab](https://colab.research.google.com/drive/1xqmacJcau_vG4qvULSk0mcpDKdFxf_6Z?usp=sharing)
+
+You may prefer to use R in Rstudio, there is also an Rmarkdown version
+of the code
+[here](https://github.com/favstats/WarwickSpringCamp_QTA/blob/main/Rmd/QTA_Day2.Rmd).
