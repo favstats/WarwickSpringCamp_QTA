@@ -7,9 +7,15 @@ output: html_document
 
 ```{r}
 # if (!require("pacman")) install.packages("pacman")
-pacman::p_load(tidyverse, tidytext, LDAvis, tm,
-               udpipe, topicmodels, Polychrome,
-               ldatuning, oolong)
+pacman::p_load(tidyverse, 
+               tidytext, 
+               LDAvis, 
+               tm,
+               udpipe, 
+               topicmodels, 
+               Polychrome,
+               ldatuning, 
+               oolong)
 
 
 data(alphabet)
@@ -18,7 +24,7 @@ data(alphabet)
 
 # Load in the data
 
-```{r, eval = F}
+```{r, eval = T}
 
 debate_transcripts <- readr::read_csv("https://raw.githubusercontent.com/favstats/WarwickSpringCamp_QTA/main/docs/slides/day1/data/debate_transcripts.csv") %>% 
   ## only keep candidates:
@@ -40,7 +46,9 @@ debates_ud <- udpipe(debate_transcripts, "english", parallel.cores = 20)
 
 After that, we only keep nouns that appear at least 5 times per speech act and remove some audience chatter:
 
-```{r, eval = F}
+```{r, eval = T}
+debates_ud <- readRDS("debates_ud.rds")
+
 debates_ud_nouns <- debates_ud %>% 
   filter(upos %in% c("NOUN"))   %>%
   mutate(lemma = str_to_lower(lemma)) %>% 
@@ -63,7 +71,7 @@ debates_dtm
 
 # Estimating the topic model with k = 20
 
-```{r, eval = F}
+```{r, eval = T}
 
 # number of topics
 K <- 20
@@ -72,16 +80,16 @@ K <- 20
 # compute the LDA model
 topicModel <- LDA(debates_dtm, k =  K, 
                   # set random number generator seed
-                  control=list(seed=77))
+                  control=list(seed=77, alpha = 0.01))
 ```
 
-## Let's tale a look at the Top 10 terms:
+## Let's take a look at the Top 10 terms:
 
 these are sorted by the betas essentially
 
 ```{r}
 
-terms(topicModel, 10)
+topicmodels::terms(topicModel, 10)
 
 ```
 It looks like Topic 1 is: *health care*
@@ -105,8 +113,8 @@ theta <- tmResult$topics
 ## here we extract documents that score highest on topic 1
 topic1_docs <- theta %>% 
   as.data.frame() %>% 
-  arrange(-`1`) %>% 
   rownames_to_column("doc_id") %>% 
+  arrange(-`1`) %>% 
   slice(1:10) %>% 
   pull(doc_id)
 
@@ -121,8 +129,8 @@ debate_transcripts %>%
 ## here we extract documents that score highest on topic 1
 topic13_docs <- theta %>% 
   as.data.frame() %>% 
-  arrange(-`13`) %>% 
   rownames_to_column("doc_id") %>% 
+  arrange(-`13`) %>% 
   slice(1:10) %>% 
   pull(doc_id)
 
@@ -158,6 +166,50 @@ topic_distributions %>%
   geom_bar(stat = "identity") + ylab("proportion") + 
   scale_fill_manual(values = paste0(alphabet[1:20], "FF"), name = "cycle") +
   theme(axis.text.x = element_text(angle = 90, hjust = 1))
+```
+
+```{r}
+
+
+speaker_distributions <- theta %>% 
+  as.data.frame() %>%
+  rownames_to_column("doc_id") %>% 
+  left_join(debate_transcripts %>% mutate(doc_id = as.character(doc_id))) %>%
+  select(speaker, 2:21)  %>%
+  group_by(speaker) %>% 
+  summarize_at(vars(1:20), mean) %>% 
+  gather(key, values, -speaker) %>% 
+  pivot_wider(id_cols = key, names_from = speaker, values_from = values) %>% 
+  mutate(key = as.numeric(key))
+
+
+heatmap(as.matrix(speaker_distributions[-1]))
+```
+
+
+
+# Finetuning the LDA model
+
+```{r}
+library(ldatuning)
+
+result <- FindTopicsNumber(
+  debates_dtm,
+  topics = seq(from = 10, to = 100, by = 5),
+  metrics = c("Griffiths2004", "CaoJuan2009", 
+              "Arun2010", "Deveaud2014"),
+  method = "Gibbs",
+  control = list(seed = 77),
+  mc.cores = 23L,
+  verbose = TRUE
+)
+```
+
+Learn more about the metrics here: https://rpubs.com/nikita-moor/107657
+
+```{r}
+FindTopicsNumber_plot(result)
+
 ```
 
 # LDAvis
@@ -219,28 +271,7 @@ oolong_test$lock()
 
 
 
-# Finetuning the LDA model
 
-```{r}
-library(ldatuning)
-
-result <- FindTopicsNumber(
-  debates_dtm,
-  topics = seq(from = 10, to = 100, by = 5),
-  metrics = c("Griffiths2004", "CaoJuan2009", 
-              "Arun2010", "Deveaud2014"),
-  method = "Gibbs",
-  control = list(seed = 77),
-  mc.cores = 23L,
-  verbose = TRUE
-)
-```
-Learn more about the metrics here: https://rpubs.com/nikita-moor/107657
-
-```{r}
-FindTopicsNumber_plot(result)
-
-```
 # General advice:
 
 + avoid model selection solely based on numeric evaluation measures
