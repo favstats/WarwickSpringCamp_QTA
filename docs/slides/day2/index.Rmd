@@ -963,6 +963,35 @@ Another typical use-case for supervised ML is sentiment analysis.
 ---
 
 
+## Model performance
+
+![](https://miro.medium.com/proxy/0*-oGC3SE8sPCPdmxs.jpg)
+
+
+---
+
+## Model performance
+
+![](images/000005.png)
+.font80[
+
+Sensitivity = $\frac{TP}{TP+FN}$
+
+= 248.1/248.1+67.4 = 0.79
+
+Sensitivity = $\frac{TN}{TN+FP}$
+
+= 275.9/275.9+78.5 = 0.78
+
+Accuracy = $\frac{TP+NP}{TP+FN+TN+FP}$
+
+= (275.9+248.1)/(248.1+67.4+275.9+78.5) = 0.78
+]
+
+
+---
+
+
 
 ## Main drivers of model performance
 
