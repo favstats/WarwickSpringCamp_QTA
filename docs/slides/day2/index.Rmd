@@ -153,6 +153,37 @@ Instructor: Fabio Votta
 
 ---
 
+### Overview Day 2 (10:00 to 16:00)
+
+.font80[
+
++ Part-of-speech tagging
+  + Keyword extraction
+  + RAKE, Noun phrases, dependency parisng
+  
+15   M I N U T E S   B R E A K:   *10:45*
+
++ Project (45 minutes time)
+
+1   H O U R   B R E A K:   *12:00*
+
++ Unsupervised Machine Learning (Topic Modelling) *13:00*
+  
+15   M I N U T E S   B R E A K:   *14:00*
+
++ Supervised Machine Learning
+
++ Project (45 minutes time)
+
+*15 minutes for presentations*
+
+]
+
+
+
+
+---
+
 class: center, middle
 
 # Part-of-speech tagging
@@ -678,7 +709,54 @@ Here is an example output:
 
 ---
 
+## Topic Models - Example
 
+> Jacobi, C., van Atteveldt, W., & Welbers, K. (2015). Quantitative analysis of large amounts of journalistic texts using topic modelling. Digital Journalism, 4(1), 89–106. doi:10.1080/21670811.2015.1093271
+
+
+*a case study of the New York Times coverage of nuclear technology from 1945*
+
+---
+
+
+
+## Jacobi et al.
+
+![](images/Jacobi1.png)
+
+---
+
+## Jacobi et al.
+
+
+<img src="images/Jacobi2.png" width = "60%">
+
+
+
+---
+
+## Jacobi et al.
+
+
+<img src="images/Jacobi3.png" width = "80%">
+
+
+
+---
+
+## Jacobi et al.
+
+![](images/Jacobi4.png)
+
+---
+
+## Jacobi et al.
+
+
+<img src="images/Jacobi5.png" width = "60%">
+
+
+---
 
 ## Topic Models
 
@@ -688,8 +766,84 @@ An LDA has two model assumptions:
 
 + every document can be represented as a distribution of topics - $\theta$ (also sometimes called $\gamma$)
 
+This means: every document consists of a range of topics
+
 + every topic can be represented as distribution of terms - $\beta$
 
+
+This means: every topic consists of a range of terms
+
+Another important parameter is $\alpha$, which regulates how topics cluster per document
+
+---
+
+
+## The conference table
+
+What is a *latent dirichlet allocation*?
+
+Often explained with the "conference table process":
+
+1. You walk into a room for a conference dinner 
+
+2. You don't want to sit alone
+
+3. Everyone does the same as they enter
+
++ Empty tables stay empty, full tables get more people proportionally until equilibrium is reached
+
+https://topicmodels.west.uni-koblenz.de/ckling/tmt/restaurant.html?parameters=1,1,1,1
+
+---
+
+
+## Dirichlet at an academic conference 
+
++ The conference dinner converges to a multinomial distribution
+
+  + e.g. the topics per document, of words per topic
+
++ The initial number of people at the tables is the *alpha parameter*
+
++ Intuitive effect of lower alpha
+
+  + initial choice of "conference attendees" have larger effect
+  + likelier that a single table will get all participants
+  
+  
++ Lower alpha = fewer topics per document
+
+  + but means topics have to include more words / have more overlap, as each word needs to be assigned
+
+---
+
+
+## You have to choose (the K)
+
+As unsupervised methods, topic models do not know how many topics it should estimate
+
+This is a parameter called *K*
+
+Choosing K (how many topics you want to be estimated) is almost a science in itself
+
+---
+
+
+## Validating topic models
+
++ What does it mean "to measure a topic"
+
++ Three strategies
+
+  + Face validity: inspect top terms, top documents, edge cases
+  + Concurrent validity: does the model reproduce expert or gold-standard coding?
+  + Construct validity: are topics *cohesive* and *distinctive*?
+  
+cohesive: coherent terms within topics
+
+distinctive: distinctive from other topics
+
+See: Chang et al. (2009): [Reading Tea Leaves: How Humans Interpret Topic Models](https://proceedings.neurips.cc/paper/2009/file/f92586a25bb3145facd64ab20fd554ff-Paper.pdf)
 
 ---
 
@@ -700,6 +854,7 @@ Most topic models take data as a so-called "*document-term-matrix* (dtm). A dtm 
 This is what it looks like:
 
 ![](images/dtm.png)
+
 
 ---
 
@@ -724,6 +879,17 @@ knitr::include_graphics("https://github.com/jamesmartherus/debates/raw/master/ma
 
 <br>
 
+<br>
+
+<br>
+
+<br>
+
+<br>
+
+
+
+
 .font70[
 We will estimate topic models on the `debates` dateset. 
 
@@ -742,9 +908,6 @@ A similar approach has been taken by Jacobi et al., 2016, and Lind et al., 2021.
 
 
 
----
-
-## Topic Models
 
 
 
