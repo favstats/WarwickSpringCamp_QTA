@@ -955,42 +955,12 @@ We are not interested in the effects, but rather the outcome
 
 Supervised machine learning is a powerful tool for text classification. It can be used to automatically categorize texts into different classes. 
 
-For example, it can be used to classifier emails into spam and non-spam, or articles into different topics. 
+For example, it can be used to classify emails into spam and non-spam, or articles into different topics. 
 
 Another typical use-case for supervised ML is sentiment analysis.
 
 
 ---
-
-
-## Model performance
-
-![](https://miro.medium.com/proxy/0*-oGC3SE8sPCPdmxs.jpg)
-
-
----
-
-## Model performance
-
-![](images/000005.png)
-.font80[
-
-Sensitivity = $\frac{TP}{TP+FN}$
-
-= 248.1/248.1+67.4 = 0.79
-
-Sensitivity = $\frac{TN}{TN+FP}$
-
-= 275.9/275.9+78.5 = 0.78
-
-Accuracy = $\frac{TP+NP}{TP+FN+TN+FP}$
-
-= (275.9+248.1)/(248.1+67.4+275.9+78.5) = 0.78
-]
-
-
----
-
 
 
 ## Main drivers of model performance
@@ -1110,9 +1080,39 @@ Hyperparameters can be tuned using a variety of methods, including grid search, 
 
 ]
 
+---
+
+## Model performance
+
+![](https://miro.medium.com/proxy/0*-oGC3SE8sPCPdmxs.jpg)
 
 
+---
 
-*continue in script smltar.Rmd*
+## Model performance
+
+.pull-left[
+
+![](images/000005.png)
+
+]
+
+.pull-right[
+.font80[
+
+Sensitivity = $\frac{TP}{TP+FN}$
+
+= 248.1/248.1+67.4 = 0.79
+
+Sensitivity = $\frac{TN}{TN+FP}$
+
+= 275.9/275.9+78.5 = 0.78
+
+Accuracy = $\frac{TP+NP}{TP+FN+TN+FP}$
+
+= (275.9+248.1)/(248.1+67.4+275.9+78.5) = 0.78
+]
+]
+
 
 
