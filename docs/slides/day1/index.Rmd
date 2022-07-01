@@ -483,16 +483,6 @@ This is opposed to base R functions that may have deeply nested function calls.
 
 ]
 
---
-
-
-![](images/nomeme.png)
-
-.font30[
-Source: https://twitter.com/andrewheiss/status/1173743447171354624 (Andrew Heiss)
-]
-
-
 
 ---
 
